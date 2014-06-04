@@ -1,0 +1,18 @@
+{
+  "name": "application-name",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+      "express": "~3.5.0",
+      "jade": "*",
+      "mongodb": "*",
+	  "multiparty": "*",
+	  "monk": "*",
+	  "gm": "~1.16.0",
+	  "mime": "~1.2.11",
+	  "pagedown": "*"
+  }
+}

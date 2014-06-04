@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style type="text/css">
+        /*noinspection CssUnusedSymbol*/
+        .wmd-button-row {
+            list-style-type: none;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            height: 20px;
+            margin-bottom: 1em;
+        }
+
+        /*noinspection CssUnusedSymbol*/
+        .wmd-spacer {
+            width: 1em;
+            height: 20px;
+            margin-left: 14px;
+            display: inline-block;
+            /*display: none;*/
+            list-style: none;
+        }
+
+        /*noinspection CssUnusedSymbol*/
+        .wmd-button {
+            background-repeat: no-repeat;
+            width: 25px;
+            height: 20px;
+            display: inline-block;
+            cursor: pointer;
+        }
+        #wmd-image-button {
+            display: none;
+        }
+        .wmd-button>span {
+            background-image: url('images/wmd-buttons.png');
+            outline: 1px solid green;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
+        #drag-upload-overlay, #image-upload-overlay {
+            font-family: "Helvetica Neue Light", Arial, sans-serif;
+            font-size: 24pt;
+            text-shadow: 2px 2px;
+            vertical-align: middle;
+            z-index: 1001;
+            position: absolute;
+            display: none;
+            background-color: gray;
+            text-align: center;
+            opacity: .6
+            display: -webkit-box;
+            -webkit-box-pack:center;
+            -webkit-box-align:center;
+        }
+    </style>
+    <script type="text/javascript" src="lib/pagedown/Markdown.Converter.js"></script>
+    <script type="text/javascript" src="lib/pagedown/Markdown.Sanitizer.js"></script>
+    <script type="text/javascript" src="lib/pagedown/Markdown.Editor.js"></script>
+    <script type="text/javascript">
+        var previousValue;
+        var editor;
+
+
+        MouseEvent.prototype.getDataTransfer = function() {
+            if (this.dataTransfer) {
+                console.log("Returning dataTransfer");
+                return this.dataTransfer;
+            } else if (this.clipboardData) {
+                console.log("Returning clipboardData");
+                return this.cliboardData;
+            } else {
+                console.error("FEIL: No data");
+            }
+        };
+
+        function dropIntercept(event) {
+            alert("Dropped");
+            var overlay = document.getElementById("drag-upload-overlay");
+            overlay.style.display = "none";
+
+            event.preventDefault();
+            event.cancelBubble = true;
+            console.log("Dropping", event);
+            console.log("Caret position: " + document.getElementById("wmd-input").selectionStart);
+            var dt = event.getDataTransfer();
+            console.log("DataTransfer types:", dt.types, "files: ", dt.files.length);
+            if (dt.items.length == 1) {
+                var item = dt.items[0];
+                console.log("Kind: ", item.kind);
+                var file = item.getAsFile();
+                window.droppedFile = file;
+                console.log("File: ", file);
+            }
+            // Fra http://html5demos.com/dnd-upload
+            var reader = new FileReader();
+            reader.onload = function(event){
+                console.log("Setter window.droppedBlob til", event.target.result);
+                var image = new Image();
+                image.width = 250; // A fake resize
+                image.src = event.target.result;
+                window.droppedImg = image;
+//                window.droppedFile = event.target.result;
+                document.getElementById("wmd-image-button").click();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function hideOverlay(overlay) {
+            overlay.style.display = "none";
+        }
+
+        function displayOverlay(overlay) {
+            var textEdit = document.getElementById("wmd-input");
+            var x = textEdit.offsetLeft;
+            var y = textEdit.offsetTop;
+            var width = textEdit.offsetWidth;
+            var height = textEdit.offsetHeight;
+            overlay.style.top = y + "px";
+            overlay.style.left = x + "px";
+            overlay.style.width = width + "px";
+            overlay.style.height = height + "px";
+            overlay.style.display = "-webkit-box";
+        }
+
+        function cancelEvent(event) {
+            event.preventDefault();
+            return false;
+        }
+
+        function dragIntercept(event) {
+//            var textedit = document.getElementById("wmd-input");
+            console.log("Dragging");
+//            console.log("TextEdit selection: ", textedit.selectionStart, textedit.selectionEnd);
+//            console.log("Dragging", event);
+            var dt = event.getDataTransfer();
+//            console.log("DataTransfer types:", dt.types, "files: ", dt.files.length, "items: " + dt.items.length);
+            if (dt.items.length > 0) {
+                var item = dt.items[0];
+//                console.log("Item: ", item);
+//                console.log("Type: ", item.type);
+                if (/^image\/.*$/.test(item.type)) {
+//                    console.log("Image");
+                    displayOverlay(document.getElementById("drag-upload-overlay"));
+                }
+//                console.log("Kind: ", item.kind);
+//                var file = item.getAsFile();
+//                console.log("File: ", file);
+            }
+        }
+
+        function dragLeaveIntercept() {
+            console.log("Drag leave");
+            var overlay = document.getElementById("drag-upload-overlay");
+            overlay.style.display = "none";
+        }
+
+        function pasteIntercept(event) {
+            console.log("Pasting", event);
+            if (event.clipboardData) {
+                console.log("ClipboardData", event.clipboardData);
+                var dt = event.clipboardData;
+                if (dt.items.length > 0) {
+                    var item = dt.items[0];
+    //                console.log("Item: ", item);
+    //                console.log("Type: ", item.type);
+                    if (/^image\/.*$/.test(item.type)) {
+    //                    console.log("Image");
+                        alert("Pasting image");
+                    }
+                    console.log("Kind: ", item.kind);
+                    var file = item.getAsFile();
+                    console.log("File: ", file);
+                }
+            }
+        }
+
+        window.addEventListener("load", function() {
+            var md = Markdown.getSanitizingConverter();
+//            var textedit = document.getElementById("textedit");
+            editor = new Markdown.Editor(md);
+            var textArea = document.getElementById("wmd-input");
+            editor.getImages = function() {
+                var imageUrls = [];
+                var imageRefs;
+                var imageRefRegexp = new RegExp("!\\[.*?]\\[(\\d+)]", "g");
+                while ((imageRefs = imageRefRegexp.exec(textArea.value)) !== null) {
+                    var imageRef = imageRefs[1];
+                    var urlRegexp = new RegExp("\\s{0,4}\\[" + imageRef + "]\\:\\s*(.*)", "g");
+                    var possibleUrlMatch = urlRegexp.exec(textArea.value);
+                    if (possibleUrlMatch !== null) {
+                        imageUrls.push({"ref": imageRef, "url": possibleUrlMatch[1]});
+                    }
+                }
+                return imageUrls;
+            };
+            textArea.addEventListener("dragenter", dragIntercept, true);
+            textArea.addEventListener("paste", pasteIntercept);
+            var panel = document.getElementById("wmd-panel");
+            var dragUploadOverlay = document.getElementById("drag-upload-overlay");
+            var imageUploadOverlay = document.getElementById("image-upload-overlay");
+            panel.addEventListener("drop", dropIntercept);
+            panel.addEventListener("dragover", cancelEvent);
+            dragUploadOverlay.addEventListener("dragleave", dragLeaveIntercept, false);
+            editor.hooks.set("insertImageDialog", function (callback) {
+                if (window.droppedImg) {
+                    hideOverlay(dragUploadOverlay);
+                    console.log("Dropped blob: ", window.droppedImg);
+                    imageUploadOverlay.appendChild(window.droppedImg);
+                    var progressEl = document.createElement("progress");
+                    progressEl.setAttribute("value", 0);
+                    progressEl.setAttribute("min", 0);
+                    progressEl.setAttribute("max", 100);
+                    imageUploadOverlay.appendChild(progressEl);
+                    displayOverlay(imageUploadOverlay);
+                    // TODO: Lagre blob-innholdet på serveren, sende URL til callback
+                    var formData = new FormData();
+                    formData.append("file", window.droppedFile);
+                    var xhr = new XMLHttpRequest();
+                    xhr.onload = function(evt) {
+                        progressEl.value = progressEl.innerHTML = 100;
+//                        var url = evt.target.getResponseHeader("Location");
+                        var ul = document.createElement("ul");
+                        imageUploadOverlay.innerHTML = "";
+                        var res = JSON.parse(evt.target.responseText);
+                        var firstFile = res[0];
+                        for (var key in firstFile) {
+                            if (firstFile.hasOwnProperty(key)) {
+                                var sizedImgObj = firstFile[key];
+                                var li = document.createElement("li");
+                                var img = document.createElement("img");
+                                li.appendChild(img);
+                                img.src = sizedImgObj.path;
+                                img.width = 50;
+                                img.style.maxHeight = "100px";
+                                img.style.maxWidth = "50px";
+                                img.className = "image-insert-thumbnail";
+                                ul.appendChild(li);
+                                img.addEventListener("click", function(evt) {
+                                    callback(evt.target.src);
+                                    hideOverlay(imageUploadOverlay);
+                                });
+                            }
+                        }
+                        imageUploadOverlay.appendChild(ul);
+                    };
+                    xhr.upload.onprogress = function(evt) {
+                        if (evt.lengthComputable) {
+                            var pctComplete = evt.loaded / evt.total * 100 | 0;
+                            progressEl.value = progressEl.innerHTML = pctComplete;
+                        }
+                    };
+                    xhr.open("POST", "../assets");
+                    xhr.send(formData);
+//                    var dataUrl = imageUploadOverlay.getElementsByTagName("img")[0].src;
+                }
+
+                return true; // tell the editor that we'll take care of getting the image url
+            });
+            editor.run();
+/*
+            window.setInterval(function() {
+                if (textedit.value == previousValue) {
+                    return;
+                }
+                previousValue = textedit.value;
+                var html = md.makeHtml(textedit.value);
+                console.log("html", html);
+            }, 1000);
+*/
+
+        });
+    </script>
+</head>
+<body>
+<div class="wmd-panel" id="wmd-panel">
+    <div id="image-upload-overlay">
+
+    </div>
+    <div id="drag-upload-overlay">
+        Drop here to upload
+    </div>
+    <div id="wmd-button-bar" style=""></div>
+    <textarea id="wmd-input" rows="30" cols="80">![Laks meg her og der][1]
+
+
+  [1]: https://www.google.com/images/srpr/logo11w.png</textarea>
+    <div id="wmd-preview"></div>
+</div>
+</body>
+</html>
