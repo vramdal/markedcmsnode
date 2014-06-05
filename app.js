@@ -54,7 +54,7 @@ app.use(function (err, req, res, next) {
 	res.status(500);
 	res.json({"error": err});
 });
-
+console.log("Starting on port ", app.get('port'));
 // http://strongloop.com/strongblog/robust-node-applications-error-handling/
 process.on('uncaughtException', function(err) {
 	console.error("Handling uncaught exception", err, err.stack);
