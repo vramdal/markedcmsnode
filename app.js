@@ -20,7 +20,7 @@ var db = undefined;
 var app = express();
 
 // all environments
-app.set('port', process.env.PORT || 8080);
+app.set('port', process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT );
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
