@@ -1,0 +1,13 @@
+.mdcms-content {
+    outline: 2px solid lightblue;
+    outline-offset: 0.5em;
+}
+
+.mdcms-content:hover {
+    background-color: lightblue !important;
+    cursor: url("/images/pencil-icon.png") 0 31, pointer;
+}
+
+.edit-frame {
+    position: absolute;
+}

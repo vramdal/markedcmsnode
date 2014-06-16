@@ -1,0 +1,70 @@
+var adminBootstrap = {
+    start: function() {
+        var head = document.querySelector("html > head");
+        try {
+            var adminCssEl = document.createElement("style");
+            adminCssEl.setAttribute("type", "text/css");
+            adminCssEl.appendChild(document.createTextNode("@import url('/stylesheets/view-admin.css');"));
+            head.appendChild(adminCssEl);
+        } catch (e) {
+            console.error("Kunne ikke legge til admin-stylesheet", e);
+        }
+        var _this = this;
+        window.addEventListener("load", function() {
+            _this.discoverEditableElements();
+        }, false);
+        document.addEventListener("click", function(evt) {
+            if (!evt.target["mdcms"]) {
+                return true;
+            }
+            if (evt.target.mdcms.isEditing()) {
+                evt.target.mdcms.closeEditor();
+            } else {
+                evt.target.mdcms.startEditor();
+            }
+        }, false);
+    },
+    setupEditableElement: function (editableElement) {
+        var _this = this;
+        editableElement["mdcms"] = {
+            editFrame: undefined,
+            startEditor: function () {
+                if (this.isEditing()) {
+                    return false;
+                }
+                var elementPosition = editableElement.getBoundingClientRect();
+                var editFrame = document.createElement("iframe");
+                editFrame.setAttribute("class", "edit-frame");
+                editFrame.setAttribute("frameborder", "0");
+                editFrame.setAttribute("src", "/editor-demo.html?content=" + editableElement.getAttribute("mdcms-id"));
+                editFrame.style.width = Math.max(200, elementPosition.width) + "px";
+                editFrame.style.height = Math.max(200, elementPosition.height) + "px";
+                editFrame.style.top = elementPosition.bottom + "px";
+                editFrame.style.left = elementPosition.left + "px";
+                document.body.appendChild(editFrame);
+                editFrame.focus();
+                this.editFrame = editFrame;
+            },
+            closeEditor: function () {
+                if (!this.isEditing()) {
+                    return false;
+                }
+                document.body.removeChild(this.editFrame);
+                this.editFrame = undefined;
+            },
+            isEditing: function () {
+                return this.editFrame != undefined;
+            }
+        }
+    }, discoverEditableElements: function() {
+        var editableElements = Array.prototype.slice.call(document.querySelectorAll(".mdcms-content"));
+        for (var i = 0; i < editableElements.length; i++) {
+            var editableElement = editableElements[i];
+            if (!editableElement["mdcms"]) {
+                this.setupEditableElement(editableElement);
+            }
+        }
+    }
+};
+
+adminBootstrap.start();

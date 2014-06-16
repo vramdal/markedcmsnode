@@ -36,10 +36,12 @@ function output(req, res) {
 	}
 }
 
+/*
 exports.content = function(db) {
 	return function(req, res) {
 		var collection = db.get("contentcollection");
 		if (req.method == "GET") {
+*/
 /*
 		var handler = function (e, docs) {
 			if (e) {
@@ -48,10 +50,11 @@ exports.content = function(db) {
 				res.json(200, docs);
 			}
 		};
-*/
+*//*
+
 			collection.find({"_id": req.params[0]}, {}, output(req, res));
 		} else if (req.method == "POST") {
 			collection.insert(req.body, output(req, res));
 		}
 	}
-};
+};*/

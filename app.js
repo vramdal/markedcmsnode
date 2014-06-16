@@ -6,6 +6,7 @@
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
+var publicContent = require("./routes/public");
 var assetsRoute = require('./routes/assets');
 var image = require('./routes/image');
 var http = require('http');
@@ -20,7 +21,7 @@ var db = undefined;
 var app = express();
 
 // all environments
-app.set('port', process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT );
+app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -48,7 +49,8 @@ app.get(/^\/assets\/(.*?)\/(\d*)x(\d*)$/, image.imageResize(db));
 app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(db));
 app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
-app.all(/^\/content\/(.+)$/, routes.content(db));
+//app.all(/^\/content\/(.+)$/, routes.content(db));
+app.get(/^\/content\/(.+)$/, publicContent.viewContent(db));
 
 app.use(function (err, req, res, next) {
 	res.status(500);
