@@ -1,0 +1,35 @@
+<html>
+<head>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.2/platform.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.2/polymer.js"></script>
+<script type="text/javascript">
+window.addEventListener("load", function() {
+  var shadow = document.querySelector('#host').createShadowRoot();
+  shadow.innerHTML = '<style scoped type="text/css">:root, *{all: initial}</style><h2><span>Yo</span>, you got replaced!</h2>' +
+                   '<div>by my awesome content</div>';
+  shadow.applyAuthorStyles = false;
+
+});
+</script>
+<style type="text/css">
+
+h2 span {
+  color: green;
+}
+
+div {
+  color: red;
+}
+
+h2 {
+  text-decoration: underline;
+  color: blue;
+}
+</style>
+</head>
+<body unresolved>
+<h2><span>Under</span> meg</h2>
+<editor-host id="host">
+</editor-host>
+</body>
+</html>
