@@ -13,19 +13,19 @@ var adminBootstrap = {
         window.addEventListener("load", function() {
             _this.discoverEditableElements();
         }, false);
-        document.addEventListener("click", function(evt) {
-            if (!evt.target["mdcms"]) {
-                return true;
-            }
-            if (evt.target.mdcms.isEditing()) {
-                evt.target.mdcms.closeEditor();
-            } else {
-                evt.target.mdcms.startEditor();
-            }
-        }, false);
     },
     setupEditableElement: function (editableElement) {
         var _this = this;
+		editableElement.addEventListener("click", function(evt) {
+			if (!evt.currentTarget["mdcms"]) {
+				return;
+			}
+			if (evt.currentTarget.mdcms.isEditing()) {
+				evt.currentTarget.mdcms.closeEditor();
+			} else {
+				evt.currentTarget.mdcms.startEditor();
+			}
+		}, true);
         editableElement["mdcms"] = {
             editFrame: undefined,
 			element: editableElement,

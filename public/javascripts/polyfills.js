@@ -13,30 +13,30 @@ window.Element && function(ElementPrototype) {
 	}
 }(Element.prototype);
 
-window.Location && function(LocationPrototype) {
-	LocationPrototype.getParameterValue = function(key) {
+Window && function(WindowPrototype) {
+	WindowPrototype.getParameterValue = function(key) {
 		if (!this["_parameters"]) {
 			this.parseQueryString();
 		}
 		return this["_parameters"][key] != undefined ? this["_parameters"][key][0] : undefined;
 	}
-}(Location.prototype);
+}(Window.prototype);
 
-window.Location && function (LocationPrototype) {
-	LocationPrototype.getParameterValues = function (key) {
+Window && function (WindowPrototype) {
+	WindowPrototype.getParameterValues = function (key) {
 		if (!this["_parameters"]) {
 			this.parseQueryString();
 		}
 		return this["_parameters"][key] != undefined ? this["_parameters"][key] : [];
 	}
-}(Location.prototype);
+}(Window.prototype);
 
-window.Location && function(LocationPrototype) {
-	LocationPrototype.parseQueryString = function() {
+Window && function(WindowPrototype) {
+	WindowPrototype.parseQueryString = function() {
 		this["_parameters"] = {};
 		var re = /[\?&]([^&;=]+)=([^&;=]+)/g;
 		var match;
-		while ((match = re.exec(this.search)) != null) {
+		while ((match = re.exec(this.location.search)) != null) {
 			var key = match[1];
 			var value = match[2];
 			if (!this["_parameters"][key]) {
@@ -46,7 +46,7 @@ window.Location && function(LocationPrototype) {
 		}
 
 	}
-}(Location.prototype);
+}(Window.prototype);
 
 function JsonFetch(url, successCallback, errorCallback) {
 	var xhr = new XMLHttpRequest();

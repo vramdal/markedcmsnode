@@ -207,7 +207,7 @@
             panel.addEventListener("drop", dropIntercept);
             panel.addEventListener("dragover", cancelEvent);
             dragUploadOverlay.addEventListener("dragleave", dragLeaveIntercept, false);
-            var mdCmsContentId = window.location.getParameterValue("mdcms-content-id");
+            var mdCmsContentId = window.getParameterValue("mdcms-content-id");
             editor.hooks.set("insertImageDialog", function (callback) {
                 if (window.droppedImg) {
                     hideOverlay(dragUploadOverlay);
