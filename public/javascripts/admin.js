@@ -28,15 +28,18 @@ var adminBootstrap = {
         var _this = this;
         editableElement["mdcms"] = {
             editFrame: undefined,
-            startEditor: function () {
+			element: editableElement,
+			mdCmsContentId: editableElement.getAttribute("mdcms-content-id"),
+			startEditor: function () {
                 if (this.isEditing()) {
                     return false;
                 }
                 var elementPosition = editableElement.getBoundingClientRect();
+				window.addEventListener("message", this.receiveRefreshMessage.bind(this), false);
                 var editFrame = document.createElement("iframe");
                 editFrame.setAttribute("class", "edit-frame");
                 editFrame.setAttribute("frameborder", "0");
-                editFrame.setAttribute("src", "/editor-demo.html?content=" + editableElement.getAttribute("mdcms-id"));
+				editFrame.setAttribute("src", "/editor-demo.html?mdcms-content-id=" + this.mdCmsContentId);
                 editFrame.style.width = Math.max(200, elementPosition.width) + "px";
                 editFrame.style.height = Math.max(200, elementPosition.height) + "px";
                 editFrame.style.top = elementPosition.bottom + "px";
@@ -51,7 +54,16 @@ var adminBootstrap = {
                 }
                 document.body.removeChild(this.editFrame);
                 this.editFrame = undefined;
-            },
+				window.removeEventListener("message", this.receiveRefreshMessage, false);
+			},
+			receiveRefreshMessage: function(evt) {
+				if (evt.origin !== window.location.protocol + "//" + window.location.host) {
+					console.error("Bad origin", evt.origin);
+				}
+				if (evt.data["mdcms-content-id"] == this.mdCmsContentId) {
+					this.element.innerHTML = evt.data["html"];
+				}
+			},
             isEditing: function () {
                 return this.editFrame != undefined;
             }

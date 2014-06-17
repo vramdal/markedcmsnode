@@ -58,6 +58,7 @@
             -webkit-box-align:center;
         }
     </style>
+    <script type="text/javascript" src="javascripts/polyfills.js"></script>
     <script type="text/javascript" src="lib/pagedown/Markdown.Converter.js"></script>
     <script type="text/javascript" src="lib/pagedown/Markdown.Sanitizer.js"></script>
     <script type="text/javascript" src="lib/pagedown/Markdown.Editor.js"></script>
@@ -206,6 +207,7 @@
             panel.addEventListener("drop", dropIntercept);
             panel.addEventListener("dragover", cancelEvent);
             dragUploadOverlay.addEventListener("dragleave", dragLeaveIntercept, false);
+            var mdCmsContentId = window.location.getParameterValue("mdcms-content-id");
             editor.hooks.set("insertImageDialog", function (callback) {
                 if (window.droppedImg) {
                     hideOverlay(dragUploadOverlay);
@@ -261,7 +263,15 @@
 
                 return true; // tell the editor that we'll take care of getting the image url
             });
+            editor.hooks.chain("onPreviewRefresh", function() {
+                var message = {"mdcms-content-id": mdCmsContentId, "html": document.getElementById("wmd-preview").innerHTML};
+                window.parent.postMessage(message, window.location.protocol + "//" + window.location.host);
+            });
             editor.run();
+            var json = new JsonFetch("/content/" + mdCmsContentId, function(json, fetcher, evt) {
+                textArea.value = json["content"];
+                editor.refreshPreview();
+            });
 /*
             window.setInterval(function() {
                 if (textedit.value == previousValue) {

@@ -5,7 +5,7 @@
 
 .mdcms-content:hover {
     background-color: lightblue !important;
-    cursor: url("/images/pencil-icon.png") 0 31, pointer;
+    cursor: url("../images/pencil-icon.png") 0 31, pointer;
 }
 
 .edit-frame {
