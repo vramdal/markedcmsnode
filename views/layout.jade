@@ -3,7 +3,9 @@ html
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
-    script(type='text/javascript', src='/javascripts/polyfills.js')
+    script(src='/bower_components/platform/platform.js')
+    link(rel='import', href='/bower_components/polymer/polymer.html')
     script(type='text/javascript', src='/javascripts/admin.js')
+    link(rel='import', href="/components/markdown-editor.html")
   body
     block content

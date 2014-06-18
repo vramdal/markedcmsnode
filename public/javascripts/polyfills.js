@@ -63,7 +63,7 @@ function JsonFetch(url, successCallback, errorCallback) {
 		if (errorCallback) {
 			errorCallback(this.response, this, evt, error);
 		} else {
-			console.error("Error fetching JSON", error, this, evt)
+			console.error("Error fetching JSON from " + url, error, this, evt)
 		}
 	};
 	xhr.addEventListener("error", function(evt) {
