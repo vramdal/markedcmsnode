@@ -11,12 +11,12 @@ var assetsRoute = require('./routes/assets');
 var image = require('./routes/image');
 var http = require('http');
 var path = require('path');
+var persistence = require('./persistence/' + process.env["persistence"]);
 
 // New Code
 var mongo = require('mongodb');
 var monk = require('monk');
 //var db = monk('localhost:27017/nodetest1');
-var db = undefined;
 
 var app = express();
 
@@ -42,15 +42,16 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 app.get('/users', user.list);
 app.get('/helloworld', routes.helloworld);
-app.use('/userlist', routes.userlist(db));
+app.use('/userlist', routes.userlist(persistence));
 // Se http://stackoverflow.com/a/15663862/253907
-app.post("/assets", assetsRoute.upload(db));
-app.get(/^\/assets\/(.*?)\/(\d*)x(\d*)$/, image.imageResize(db));
-app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(db));
+app.post("/assets", assetsRoute.upload(persistence));
+app.get(/^\/assets\/(.*?)\/(\d*)x(\d*)$/, image.imageResize(persistence));
+app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(persistence));
 app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
-//app.all(/^\/content\/(.+)$/, routes.content(db));
-app.get(/^\/content\/(.+)$/, publicContent.viewContent(db));
+//app.all(/^\/content\/(.+)$/, routes.content(persistence));
+app.get(/^\/content\/(.+)$/, publicContent.viewContent(persistence));
+app.post(/^\/content\/(.+)$/, publicContent.saveContent(persistence));
 
 app.use(function (err, req, res, next) {
 	res.status(500);

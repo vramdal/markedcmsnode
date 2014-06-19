@@ -48,6 +48,14 @@ Window && function(WindowPrototype) {
 	}
 }(Window.prototype);
 
+function handleJsonError(evt, error, errorCallback) {
+    if (errorCallback) {
+        errorCallback(this.response, this, evt, error);
+    } else {
+        console.error("Error fetching JSON from " + url, error, this, evt)
+    }
+}
+
 function JsonFetch(url, successCallback, errorCallback) {
 	var xhr = new XMLHttpRequest();
 	xhr.addEventListener("load", function(evt) {
@@ -55,21 +63,34 @@ function JsonFetch(url, successCallback, errorCallback) {
 		try {
 			json = JSON.parse(this.responseText);
 		} catch (e) {
-			this._handleError(evt, e);
+            handleJsonError(evt, e, errorCallback);
 		}
 		successCallback(json, this, evt);
 	});
-	xhr._handleError = function(evt, error) {
-		if (errorCallback) {
-			errorCallback(this.response, this, evt, error);
-		} else {
-			console.error("Error fetching JSON from " + url, error, this, evt)
-		}
-	};
 	xhr.addEventListener("error", function(evt) {
 		errorCallback(this.response, this, evt);
 	});
 	xhr.open("GET", url);
 	xhr.setRequestHeader("Accept", "application/json");
 	xhr.send();
+}
+
+function JsonPost(url, data, successCallback, errorCallback) {
+var xhr = new XMLHttpRequest();
+    xhr.addEventListener("load", function(evt) {
+        var json;
+        try {
+            json = JSON.parse(this.responseText);
+        } catch (e) {
+            handleJsonError(evt, e, errorCallback);
+        }
+        successCallback(json, this, evt);
+    });
+    xhr.addEventListener("error", function(evt) {
+        errorCallback(this.response, this, evt);
+    });
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(data));
 }

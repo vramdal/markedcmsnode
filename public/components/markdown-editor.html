@@ -128,22 +128,30 @@
     Polymer('mdcms-markdown-editor', {
         mdCmsContentId: "content-url-goes-here",
         morsomt: "nei",
+        textArea: undefined,
+        get value() {
+            return this.textArea.value;
+        },
+        set value(txt) {
+            this.textArea.value = txt;
+        },
         attached: function() {
             alert(this.morsomt);
             var md = Markdown.getSanitizingConverter();
+            var _this = this;
 //            var textedit = polymerThis.$["textedit"];
             console.log("Initializing editor");
             polymerThis = this;
             editor = new Markdown.Editor(md, polymerThis.shadowRoot);
-            var textArea = polymerThis.$["wmd-input"];
+            this.textArea = polymerThis.$["wmd-input"];
             editor.getImages = function() {
                 var imageUrls = [];
                 var imageRefs;
                 var imageRefRegexp = new RegExp("!\\[.*?]\\[(\\d+)]", "g");
-                while ((imageRefs = imageRefRegexp.exec(textArea.value)) !== null) {
+                while ((imageRefs = imageRefRegexp.exec(_this.textArea.value)) !== null) {
                     var imageRef = imageRefs[1];
                     var urlRegexp = new RegExp("\\s{0,4}\\[" + imageRef + "]\\:\\s*(.*)", "g");
-                    var possibleUrlMatch = urlRegexp.exec(textArea.value);
+                    var possibleUrlMatch = urlRegexp.exec(_this.textArea.value);
                     if (possibleUrlMatch !== null) {
                         imageUrls.push({"ref": imageRef, "url": possibleUrlMatch[1]});
                     }
@@ -151,9 +159,9 @@
                 return imageUrls;
             };
             console.log("Adding dragEnter handler");
-            textArea.addEventListener("dragenter", dragIntercept, true);
+            this.textArea.addEventListener("dragenter", dragIntercept, true);
             console.log("Adding paste handler");
-            textArea.addEventListener("paste", pasteIntercept);
+            this.textArea.addEventListener("paste", pasteIntercept);
             var panel = polymerThis.$["wmd-panel"];
             var dragUploadOverlay = polymerThis.$["drag-upload-overlay"];
             var imageUploadOverlay = polymerThis.$["image-upload-overlay"];
@@ -222,8 +230,8 @@
             });
             editor.run();
             //noinspection JSUnusedLocalSymbols
-            var json = new JsonFetch("/content/" + this.mdCmsContentId, function(json, fetcher, evt) {
-                textArea.value = json["content"];
+            var json = new JsonFetch(this.mdCmsContentId, function(json, fetcher, evt) {
+                _this.textArea.value = json["content"];
                 editor.refreshPreview();
             });
 

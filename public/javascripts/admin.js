@@ -57,8 +57,19 @@ var adminBootstrap = {
                     return false;
                 }
                 document.body.removeChild(this.editFrame);
+                this.editFrame.removeEventListener("refresh-preview", this.receiveRefreshMessage, false);
+                window.document.title = window.document.title + "...";
+                new JsonPost(this.mdCmsContentId, {content: this.editFrame.value},
+                        function(json, fetcher, evt) {
+                            window.document.title = window.document.title.substring(0, window.document.title.length - 3);
+
+                        },
+                        function(response, fetcher, evt) {
+                            window.document.title = window.document.title.substring(0, window.document.title.length - 3);
+                            console.error("Feil ved lagring", response, fetcher, evt);
+                });
                 this.editFrame = undefined;
-				window.removeEventListener("message", this.receiveRefreshMessage, false);
+                window.removeEventListener("message", this.receiveRefreshMessage, false);
 			},
 			receiveRefreshMessage: function(evt) {
 /*
