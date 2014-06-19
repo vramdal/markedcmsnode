@@ -51,7 +51,7 @@
                 image.src = event.target.result;
                 window.droppedImg = image;
 //                window.droppedFile = event.target.result;
-                polymerThis.$["wmd-image-button"].click();
+                polymerThis.$["wmd-panel"].querySelector("#wmd-image-button").click();
             };
             reader.readAsDataURL(file);
         }
@@ -134,7 +134,7 @@
 //            var textedit = polymerThis.$["textedit"];
             console.log("Initializing editor");
             polymerThis = this;
-            editor = new Markdown.Editor(md, {getElementById: function(id) {return polymerThis.$[id]}});
+            editor = new Markdown.Editor(md, polymerThis.shadowRoot);
             var textArea = polymerThis.$["wmd-input"];
             editor.getImages = function() {
                 var imageUrls = [];
@@ -288,7 +288,7 @@
               background-color: gray;
               text-align: center;
               opacity: .6;
-              display : -webkit-box;
+              /*display: -webkit-box;*/
               -webkit-box-pack: center;
               -webkit-box-align: center;
           }

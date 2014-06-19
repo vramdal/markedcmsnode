@@ -414,16 +414,16 @@
 
         // It's not very clear which blocks work with which browsers.
         if (self.innerHeight && self.scrollMaxY) {
-            scrollWidth = doc.body.scrollWidth;
+            scrollWidth = document.body.scrollWidth;
             scrollHeight = self.innerHeight + self.scrollMaxY;
         }
-        else if (doc.body.scrollHeight > doc.body.offsetHeight) {
-            scrollWidth = doc.body.scrollWidth;
-            scrollHeight = doc.body.scrollHeight;
+        else if (document.body.scrollHeight > document.body.offsetHeight) {
+            scrollWidth = document.body.scrollWidth;
+            scrollHeight = document.body.scrollHeight;
         }
         else {
-            scrollWidth = doc.body.offsetWidth;
-            scrollHeight = doc.body.offsetHeight;
+            scrollWidth = document.body.offsetWidth;
+            scrollHeight = document.body.offsetHeight;
         }
 
         if (self.innerHeight) {
@@ -431,15 +431,15 @@
             innerWidth = self.innerWidth;
             innerHeight = self.innerHeight;
         }
-        else if (doc.documentElement && doc.documentElement.clientHeight) {
+        else if (document.documentElement && document.documentElement.clientHeight) {
             // Some versions of IE (IE 6 w/ a DOCTYPE declaration)
-            innerWidth = doc.documentElement.clientWidth;
-            innerHeight = doc.documentElement.clientHeight;
+            innerWidth = document.documentElement.clientWidth;
+            innerHeight = document.documentElement.clientHeight;
         }
-        else if (doc.body) {
+        else if (document.body) {
             // Other versions of IE
-            innerWidth = doc.body.clientWidth;
-            innerHeight = doc.body.clientHeight;
+            innerWidth = document.body.clientWidth;
+            innerHeight = document.body.clientHeight;
         }
 
         var maxWidth = Math.max(scrollWidth, innerWidth);
@@ -1022,7 +1022,7 @@
     // browser-specific hacks remain here.
     ui.createBackground = function () {
 
-        var background = doc.createElement("div"),
+        var background = document.createElement("div"),
             style = background.style;
         
         background.className = "wmd-prompt-background";
@@ -1051,7 +1051,7 @@
             style.width = "100%";
         }
 
-        doc.body.appendChild(background);
+		(doc.body || doc).appendChild(background);
         return background;
     };
 
