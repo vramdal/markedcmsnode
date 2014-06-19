@@ -2,63 +2,6 @@
 <!--<link rel="import" href="../bower_components/core-ajax/core-ajax.html">-->
 
 <polymer-element name="mdcms-markdown-editor" attributes="mdCmsContentId morsomt">
-    <style>
-
-        /*noinspection CssUnusedSymbol*/
-        .wmd-button-row {
-            list-style-type: none;
-            width: 100%;
-            padding: 0;
-            margin: 0;
-            height: 20px;
-            margin-bottom: 1em;
-        }
-
-        /*noinspection CssUnusedSymbol*/
-        .wmd-spacer {
-            width: 1em;
-            height: 20px;
-            margin-left: 14px;
-            display: inline-block;
-            /*display: none;*/
-            list-style: none;
-        }
-
-        /*noinspection CssUnusedSymbol*/
-        .wmd-button {
-            background-repeat: no-repeat;
-            width: 25px;
-            height: 20px;
-            display: inline-block;
-            cursor: pointer;
-        }
-        #wmd-image-button {
-            display: none;
-        }
-        .wmd-button>span {
-            background-image: url('images/wmd-buttons.png');
-            outline: 1px solid green;
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-        }
-        #drag-upload-overlay, #image-upload-overlay {
-            font-family: "Helvetica Neue Light", Arial, sans-serif;
-            font-size: 24pt;
-            text-shadow: 2px 2px;
-            vertical-align: middle;
-            z-index: 1001;
-            position: absolute;
-            display: none;
-            background-color: gray;
-            text-align: center;
-            opacity: .6
-            display: -webkit-box;
-            -webkit-box-pack:center;
-            -webkit-box-align:center;
-        }
-
-    </style>
     <script type="text/javascript" src="../javascripts/polyfills.js"></script>
     <script type="text/javascript" src="../lib/pagedown/Markdown.Converter.js"></script>
     <script type="text/javascript" src="../lib/pagedown/Markdown.Sanitizer.js"></script>
@@ -66,6 +9,7 @@
     <script type="text/javascript">
         var previousValue;
         var editor;
+        var polymerThis;
 
 
         MouseEvent.prototype.getDataTransfer = function() {
@@ -82,13 +26,13 @@
 
         function dropIntercept(event) {
             alert("Dropped");
-            var overlay = document.getElementById("drag-upload-overlay");
+            var overlay = polymerThis.$["drag-upload-overlay"];
             overlay.style.display = "none";
 
             event.preventDefault();
             event.cancelBubble = true;
             console.log("Dropping", event);
-            console.log("Caret position: " + document.getElementById("wmd-input").selectionStart);
+            console.log("Caret position: " + polymerThis.$["wmd-input"].selectionStart);
             var dt = event.getDataTransfer();
             console.log("DataTransfer types:", dt.types, "files: ", dt.files.length);
             if (dt.items.length == 1) {
@@ -107,7 +51,7 @@
                 image.src = event.target.result;
                 window.droppedImg = image;
 //                window.droppedFile = event.target.result;
-                document.getElementById("wmd-image-button").click();
+                polymerThis.$["wmd-image-button"].click();
             };
             reader.readAsDataURL(file);
         }
@@ -117,7 +61,7 @@
         }
 
         function displayOverlay(overlay) {
-            var textEdit = document.getElementById("wmd-input");
+            var textEdit = polymerThis.$["wmd-input"];
             var x = textEdit.offsetLeft;
             var y = textEdit.offsetTop;
             var width = textEdit.offsetWidth;
@@ -135,7 +79,7 @@
         }
 
         function dragIntercept(event) {
-//            var textedit = document.getElementById("wmd-input");
+//            var textedit = polymerThis.$["wmd-input"];
             console.log("Dragging");
 //            console.log("TextEdit selection: ", textedit.selectionStart, textedit.selectionEnd);
 //            console.log("Dragging", event);
@@ -147,7 +91,7 @@
 //                console.log("Type: ", item.type);
                 if (/^image\/.*$/.test(item.type)) {
 //                    console.log("Image");
-                    displayOverlay(document.getElementById("drag-upload-overlay"));
+                    displayOverlay(polymerThis.$["drag-upload-overlay"]);
                 }
 //                console.log("Kind: ", item.kind);
 //                var file = item.getAsFile();
@@ -157,7 +101,7 @@
 
         function dragLeaveIntercept() {
             console.log("Drag leave");
-            var overlay = document.getElementById("drag-upload-overlay");
+            var overlay = polymerThis.$["drag-upload-overlay"];
             overlay.style.display = "none";
         }
 
@@ -187,11 +131,11 @@
         attached: function() {
             alert(this.morsomt);
             var md = Markdown.getSanitizingConverter();
-//            var textedit = document.getElementById("textedit");
+//            var textedit = polymerThis.$["textedit"];
             console.log("Initializing editor");
-            var polymerThis = this;
+            polymerThis = this;
             editor = new Markdown.Editor(md, {getElementById: function(id) {return polymerThis.$[id]}});
-            var textArea = this.$["wmd-input"];
+            var textArea = polymerThis.$["wmd-input"];
             editor.getImages = function() {
                 var imageUrls = [];
                 var imageRefs;
@@ -210,9 +154,9 @@
             textArea.addEventListener("dragenter", dragIntercept, true);
             console.log("Adding paste handler");
             textArea.addEventListener("paste", pasteIntercept);
-            var panel = this.$["wmd-panel"];
-            var dragUploadOverlay = this.$["drag-upload-overlay"];
-            var imageUploadOverlay = this.$["image-upload-overlay"];
+            var panel = polymerThis.$["wmd-panel"];
+            var dragUploadOverlay = polymerThis.$["drag-upload-overlay"];
+            var imageUploadOverlay = polymerThis.$["image-upload-overlay"];
             panel.addEventListener("drop", dropIntercept);
             panel.addEventListener("dragover", cancelEvent);
             dragUploadOverlay.addEventListener("dragleave", dragLeaveIntercept, false);
@@ -277,6 +221,7 @@
                 window.parent.postMessage(message, window.location.protocol + "//" + window.location.host);
             });
             editor.run();
+            //noinspection JSUnusedLocalSymbols
             var json = new JsonFetch("/content/" + this.mdCmsContentId, function(json, fetcher, evt) {
                 textArea.value = json["content"];
                 editor.refreshPreview();
@@ -287,6 +232,68 @@
     </script>
 
   <template>
+      <style>
+
+          /*noinspection CssUnusedSymbol*/
+          .wmd-button-row {
+              list-style-type: none;
+              width: 100%;
+              padding: 0;
+              margin: 0;
+              height: 20px;
+              margin-bottom: 1em;
+          }
+
+          /*noinspection CssUnusedSymbol*/
+          .wmd-spacer {
+              width: 1em;
+              height: 20px;
+              margin-left: 14px;
+              display: inline-block;
+              /*display: none;*/
+              list-style: none;
+          }
+
+          /*noinspection CssUnusedSymbol*/
+          .wmd-button {
+              background-repeat: no-repeat;
+              width: 25px;
+              height: 20px;
+              display: inline-block;
+              cursor: pointer;
+          }
+
+          /*noinspection CssUnusedSymbol*/
+          #wmd-image-button {
+              display: none;
+          }
+
+          .wmd-button > span {
+              background-image: url('../images/wmd-buttons.png');
+              outline: 1px solid green;
+              display: inline-block;
+              width: 20px;
+              height: 20px;
+          }
+
+          /*noinspection CssUnusedSymbol,CssUnknownProperty*/
+          #drag-upload-overlay, #image-upload-overlay {
+              font-family: "Helvetica Neue Light", Arial, sans-serif;
+              font-size: 24pt;
+              text-shadow: 2px 2px;
+              vertical-align: middle;
+              z-index: 1001;
+              position: absolute;
+              display: none;
+              background-color: gray;
+              text-align: center;
+              opacity: .6;
+              display : -webkit-box;
+              -webkit-box-pack: center;
+              -webkit-box-align: center;
+          }
+
+      </style>
       <div class="wmd-panel" id="wmd-panel">
           <div id="image-upload-overlay">
 

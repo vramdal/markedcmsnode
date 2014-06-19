@@ -1,0 +1,27 @@
+<polymer-element name="test-elem">
+
+  <template>
+    <style>
+    /*noinspection CssUnusedSymbol*/
+    .deepinside {
+        background-color: green;
+        /*noinspection CssInvalidElement*/
+        color: initial;
+    }</style>
+    <content></content>
+    <div id="container">
+      <div class="deepinside">
+      TECK ... CHEST
+      </div>
+    </div>
+  </template>
+
+  <script>
+    Polymer('test-elem', {
+      applyAuthorStyles: true
+    });
+  </script>
+
+</polymer-element>
+
+<test-elem>Hi</test-elem>

@@ -1,35 +1,25 @@
-<html>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.2/platform.js"></script>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.2/polymer.js"></script>
-<script type="text/javascript">
-window.addEventListener("load", function() {
-  var shadow = document.querySelector('#host').createShadowRoot();
-  shadow.innerHTML = '<style scoped type="text/css">:root, *{all: initial}</style><h2><span>Yo</span>, you got replaced!</h2>' +
-                   '<div>by my awesome content</div>';
-  shadow.applyAuthorStyles = false;
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
 
-});
-</script>
-<style type="text/css">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.2/platform.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/polymer/0.3.2/polymer.js"></script>
 
-h2 span {
-  color: green;
-}
+    <link rel="import" href="test-elem.html">
 
-div {
-  color: red;
-}
+    <style type="text/css">
+        /*noinspection CssUnusedSymbol*/
+        .deepinside {
+            color: red;
+        }
+        test-elem {
+            color: #c0e0ff;
+        }
+    </style>
 
-h2 {
-  text-decoration: underline;
-  color: blue;
-}
-</style>
 </head>
-<body unresolved>
-<h2><span>Under</span> meg</h2>
-<editor-host id="host">
-</editor-host>
+<body>
+<test-elem>Hi</test-elem>
 </body>
 </html>
