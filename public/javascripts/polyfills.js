@@ -76,13 +76,22 @@ function JsonFetch(url, successCallback, errorCallback) {
 }
 
 function HtmlFetch(url, targetEl, errorCallback) {
-    JsonFetch(url,
-            function(json, fetcher, evt) {
-                targetEl.innerHTML = json["content"];
-            }, function (errorResponse, fetcher, evt) {
-                targetEl.innerHTML = "<span style=\"color: red\">Error fetching updated content</span>";
-
-            });
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function (evt) {
+		var html;
+		try {
+			html = this.responseText;
+		} catch (e) {
+			handleJsonError(evt, e, errorCallback);
+		}
+		targetEl.innerHTML = html;
+	});
+	xhr.addEventListener("error", function (evt) {
+		targetEl.innerHTML = "<span style=\"color: red\">Error fetching updated content</span>";
+	});
+	xhr.open("GET", url);
+	xhr.setRequestHeader("Accept", "text/htmlfragment");
+	xhr.send();
 }
 
 function JsonPost(url, data, successCallback, errorCallback) {

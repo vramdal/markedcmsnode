@@ -1,4 +1,6 @@
 doctype html
+mixin block(id, content)
+  include includes/content
 html
   head
     title= title
@@ -8,4 +10,5 @@ html
     script(type='text/javascript', src='/javascripts/admin.js')
     link(rel='import', href="/components/markdown-editor.html")
   body
-    block content
+      each contentBlock in contentBlocks
+        +block(contentBlock.id, contentBlock.content)

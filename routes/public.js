@@ -5,21 +5,25 @@ exports.viewContent = function(persistence) {
         persistence.getContent(req.path, function(data) {
             var result = {
           			"id": req.path,
-          			"content": data,
-                    "md": md
+          			"content": data
           		};
-            if (req.accepts("text/html")) {
-          			res.render('layout', {contentBlocks: [result]});
-          		} else if (req.accepts("application/json")) {
-          			res.json(result);
-          		} else  {
-          			res.status(406);
-          		}
-        }, function(errorCode, error) {
-            res.status(errorCode);
-            res.end();
-            console.error(error);
-        });
+			if (req.accepts("text/html")) {
+				res.render('layout', {contentBlocks: [result], md: md});
+			} else if (req.accepts("text/htmlfragment")) {
+				var payload = result;
+				payload.md = md;
+				res.render('includes/content', payload);
+			} else if (req.accepts("application/json")) {
+				res.json(result);
+			} else  {
+				res.status(406);
+			}
+		}, function(errorCode, error) {
+			res.status(errorCode);
+			res.send("Error " + errorCode);
+			res.end();
+			console.error(error);
+		});
     }
 };
 

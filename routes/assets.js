@@ -3,12 +3,12 @@ var path = require("path");
 var multiparty = require("multiparty");
 
 //noinspection JSUnusedLocalSymbols
-exports.upload = function(db) {
+exports.upload = function(persistence) {
     return function(req, res) {
         console.log("Upload");
         // Se https://www.npmjs.org/package/multiparty
         var form = new multiparty.Form({
-            "uploadDir": __dirname + "/../../assets",
+            "uploadDir": __dirname + "/../assets",
             "hash": "md5"
         });
 
@@ -17,14 +17,34 @@ exports.upload = function(db) {
 //            res.write('received upload:\n\n');
 //            res.end(util.inspect({fields: fields, files: files}));
             var result = [];
+			if (!files || files.length == 0) {
+				res.status(400);
+				res.json({"error": "No files"});
+			}
             for (var fileName in files) {
                 if (!files.hasOwnProperty(fileName)) {
                     continue;
                 }
                 var file = files[fileName][0];
-                var parts = file.path.split("/");
-                var newFileName = path.basename(file.path);
-                result.push(
+				persistence.copyBinary(file.path,
+						function(urlPath) {
+							result.push({
+								original: {
+									"path": urlPath
+								}
+							});
+							res.writeHead(201, {'Location': result[0].path});
+							res.end(JSON.stringify(result));
+
+						},
+						function(err){
+							res.status(500);
+							res.end("Error " + 500);
+						});
+/*
+				var parts = file.path.split("/");
+				var newFileName = path.basename(file.path);
+				result.push(
                         {
                             original: {
                                 "path": "/assets/" + newFileName,
@@ -33,13 +53,13 @@ exports.upload = function(db) {
                         }
                 );
                 console.log("File moved");
+                */
             }
-            var collection = db.get("contentcollection");
-            collection.insert(result);
-            res.writeHead(201, {'Location': result[0].path});
+            /*res.writeHead(201, {'Location': result[0].path});
             res.end(JSON.stringify(result));
 //            res.json(result);
-        });
+ */
+			});
 //        res.json({"status": "OK"});
     };
 };

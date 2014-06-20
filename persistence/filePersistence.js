@@ -8,6 +8,11 @@ var rootDir = process.env["filePersistence.rootDir"];
 function getFilePath(pathStr) {
     return pathTool.join(rootDir, pathStr);
 }
+
+function getURLPath(filePath) {
+	return filePath.substring(rootDir.length);
+}
+
 exports.getContent = function(pathStr, callBack, errorHandler) {
 	var filePath = getFilePath(pathStr) + ".md";
     fs.exists(filePath, function(exists) {
@@ -63,3 +68,27 @@ exports.saveBinary = function (pathStr, data, errorCallback) {
         });
     });
 };
+
+exports.copyBinary = function(srcFilePath, successCallback, errorCallback) {
+	var filePath = getFilePath(pathTool.basename(srcFilePath));
+	var cbCalled = false;
+
+	var rd = fs.createReadStream(srcFilePath);
+	rd.on("error", function (err) {
+		errorCallback(err);
+	});
+	var wr = fs.createWriteStream(filePath);
+	wr.on("error", function (err) {
+		errorCallback(err);
+	});
+	wr.on("close", function (ex) {
+		successCallback(getURLPath(filePath));
+	});
+	rd.pipe(wr);
+
+	function done(err) {
+		if (!cbCalled) {
+			cb(err);
+			cbCalled = true;
+		}
+	}};
