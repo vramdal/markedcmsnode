@@ -10,5 +10,6 @@ html
     script(type='text/javascript', src='/javascripts/admin.js')
     link(rel='import', href="/components/markdown-editor.html")
   body
-      each contentBlock in contentBlocks
-        +block(contentBlock.id, contentBlock.content)
+      block body
+        each contentBlock in contentBlocks
+          +block(contentBlock.id, contentBlock.content)

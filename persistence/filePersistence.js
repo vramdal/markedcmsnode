@@ -13,21 +13,29 @@ function getURLPath(filePath) {
 	return filePath.substring(rootDir.length);
 }
 
+function _getFile(filePath, callBack, errorHandler) {
+	fs.exists(filePath, function (exists) {
+		if (!exists) {
+			errorHandler(404);
+		} else {
+			fs.readFile(filePath, {"encoding": "utf8", "flag": "r"}, function (err, data) {
+				if (err) {
+					errorHandler(500, err);
+				} else {
+					callBack(data);
+				}
+			});
+		}
+	});
+}
 exports.getContent = function(pathStr, callBack, errorHandler) {
 	var filePath = getFilePath(pathStr) + ".md";
-    fs.exists(filePath, function(exists) {
-        if (!exists) {
-            errorHandler(404);
-        } else {
-            fs.readFile(filePath, {"encoding": "utf8", "flag": "r"}, function(err, data) {
-                if (err) {
-                    errorHandler(500, err);
-                } else {
-                    callBack(data);
-                }
-            });
-        }
-    });
+	_getFile(filePath, callBack, errorHandler);
+};
+
+exports.getPage = function(pathStr, callBack, errorHandler) {
+	var filePath = getFilePath(pathStr + ".page");
+	_getFile(filePath, callBack, errorHandler);
 };
 
 exports.getBinaryStream = function(pathStr, errorCallback) {

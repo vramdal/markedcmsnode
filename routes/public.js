@@ -8,7 +8,7 @@ exports.viewContent = function(persistence) {
           			"content": data
           		};
 			if (req.accepts("text/html")) {
-				res.render('layout', {contentBlocks: [result], md: md});
+				res.render('admin-base', {contentBlocks: [result], md: md});
 			} else if (req.accepts("text/htmlfragment")) {
 				var payload = result;
 				payload.md = md;

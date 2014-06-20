@@ -1,0 +1,11 @@
+doctype html
+case isAdmin
+    when true
+        extends admin-base
+    default
+        extends public-base
+
+html
+    head
+    block body
+        h1 Laks

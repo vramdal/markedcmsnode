@@ -7,6 +7,7 @@ var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
 var publicContent = require("./routes/public");
+var pageRoute = require("./routes/page");
 var assetsRoute = require('./routes/assets');
 var image = require('./routes/image');
 var http = require('http');
@@ -50,6 +51,7 @@ app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(persistence));
 app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
+app.get(/^\/page\/(.+)$/, pageRoute.viewContent(persistence));
 app.get(/^\/content\/(.+)$/, publicContent.viewContent(persistence));
 app.post(/^\/content\/(.+)$/, publicContent.saveContent(persistence));
 
