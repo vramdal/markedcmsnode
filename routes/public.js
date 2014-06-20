@@ -1,12 +1,15 @@
+var md = require('marked');
+
 exports.viewContent = function(persistence) {
     return function(req, res) {
         persistence.getContent(req.path, function(data) {
             var result = {
           			"id": req.path,
-          			"content": data
+          			"content": data,
+                    "md": md
           		};
             if (req.accepts("text/html")) {
-          			res.render('content', result);
+          			res.render('layout', {contentBlocks: [result]});
           		} else if (req.accepts("application/json")) {
           			res.json(result);
           		} else  {
@@ -30,7 +33,6 @@ exports.saveContent = function(persistence) {
             } else {
                 res.json("Saved", req.path);
             }
-            res.end();
         }, function(errorCode, error) {
             console.error(error);
             res.status(errorCode);

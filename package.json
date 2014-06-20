@@ -14,6 +14,7 @@
 	  "monk": "*",
 	  "gm": "~1.16.0",
 	  "mime": "~1.2.11",
-	  "pagedown": "*"
+	  "pagedown": "*",
+      "marked": "*"
   }
 }
