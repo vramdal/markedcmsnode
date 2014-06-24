@@ -7,16 +7,31 @@ exports.upload = function(persistence) {
     return function(req, res) {
         console.log("Upload");
         // Se https://www.npmjs.org/package/multiparty
-        var form = new multiparty.Form({
+        var form = new multiparty.Form(/*{
             "uploadDir": __dirname + "/../assets",
             "hash": "md5"
-        });
+        }*/);
 
-        form.parse(req, function(err, fields, files) {
-//            res.writeHead(200, {'content-type': 'text/plain'});
-//            res.write('received upload:\n\n');
-//            res.end(util.inspect({fields: fields, files: files}));
-            var result = [];
+        form.on("part", function(part) {
+            if (part.filename) {
+                console.log("Mottok fil " + part.filename);
+                persistence.saveStream(part, req.path);
+            } else {
+                console.log("Mottok noe annet enn fil");
+            }
+
+        });
+        form.on("close", function() {
+            res.statusCode = 201;
+            res.setHeader("Location", req.path);
+            res.end("Lastet opp");
+        });
+        form.on("error", function(err) {
+            res.writeHead(400);
+            res.end(err + "");
+        });
+        form.parse(req);
+/*            var result = [];
 			if (!files || files.length == 0) {
 				res.status(400);
 				res.json({"error": "No files"});
@@ -41,25 +56,7 @@ exports.upload = function(persistence) {
 							res.status(500);
 							res.end("Error " + 500);
 						});
-/*
-				var parts = file.path.split("/");
-				var newFileName = path.basename(file.path);
-				result.push(
-                        {
-                            original: {
-                                "path": "/assets/" + newFileName,
-                                "originalFilename": file.originalFilename
-                            }
-                        }
-                );
-                console.log("File moved");
-                */
             }
-            /*res.writeHead(201, {'Location': result[0].path});
-            res.end(JSON.stringify(result));
-//            res.json(result);
- */
-			});
-//        res.json({"status": "OK"});
+			});*/
     };
 };

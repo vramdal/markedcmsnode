@@ -6,7 +6,6 @@
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
-var publicContent = require("./routes/public");
 var pageRoute = require("./routes/page");
 var assetsRoute = require('./routes/assets');
 var rawRoute = require('./routes/raw');
@@ -14,7 +13,8 @@ var image = require('./routes/image');
 var http = require('http');
 var path = require('path');
 var persistence = require('./persistence/' + process.env["persistence"]);
-var contentNegotiator = require('./middleware/contentNegotiator');
+var serveContentNegotiator = require('./middleware/contentNegotiator');
+var uploadContentNegotiator = require('./middleware/uploadContentNegotiator');
 var markdownRoute = require('./routes/markdownRoute');
 
 // New Code
@@ -44,25 +44,30 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/users', user.list);
-app.get('/helloworld', routes.helloworld);
-app.use('/userlist', routes.userlist(persistence));
+//app.get('/users', user.list);
+//app.get('/helloworld', routes.helloworld);
+//app.use('/userlist', routes.userlist(persistence));
 // Se http://stackoverflow.com/a/15663862/253907
 app.post("/assets", assetsRoute.upload(persistence));
-app.get(/^\/assets\/(.*?)\/(\d*)x(\d*)$/, image.imageResize(persistence));
-app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(persistence));
+//app.get(/^\/assets\/(.*?)\/(\d*)x(\d*)$/, image.imageResize(persistence));
+//app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(persistence));
 app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
 app.get(/^\/(?!assets\/)(?!public\/)(?!(.*?\..+)$)(.+)$/, pageRoute.viewContent(persistence));
 app.get(/^\/(?!assets\/)(?!public\/).*?\..+$/,
-        contentNegotiator.negotiator({
+        serveContentNegotiator.negotiator({
             "text/html": markdownRoute.preview(persistence)
         }, rawRoute.getFile(persistence)));
-app.post(/^\/(?!assets\/)(?!public\/).*?\..+$/, rawRoute.saveText(persistence));
+app.post(/^\/(?!assets\/)(?!public\/).*?\..+$/,
+        uploadContentNegotiator.uploadNegotiator({
+            "text/x-markdown": rawRoute.saveText(persistence),
+            "multipart/form-data": assetsRoute.upload(persistence)
+        }));
 //app.get(/^\/content\/(.+)$/, publicContent.viewContent(persistence));
 //app.post(/^\/content\/(.+)$/, publicContent.saveContent(persistence));
 
+//noinspection JSUnusedLocalSymbols
 app.use(function (err, req, res, next) {
 	res.status(500);
 	res.json({"error": err});

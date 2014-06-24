@@ -169,7 +169,7 @@
             editor.hooks.set("insertImageDialog", function (callback) {
                 if (window.droppedImg) {
                     hideOverlay(dragUploadOverlay);
-                    console.log("Dropped blob: ", window.droppedImg);
+//                    console.log("Dropped blob: ", window.droppedImg);
                     imageUploadOverlay.appendChild(window.droppedImg);
                     var progressEl = document.createElement("progress");
                     progressEl.setAttribute("value", 0);
@@ -186,26 +186,20 @@
 //                        var url = evt.target.getResponseHeader("Location");
                         var ul = document.createElement("ul");
                         imageUploadOverlay.innerHTML = "";
-                        var res = JSON.parse(evt.target.responseText);
-                        var firstFile = res[0];
-                        for (var key in firstFile) {
-                            if (firstFile.hasOwnProperty(key)) {
-                                var sizedImgObj = firstFile[key];
-                                var li = document.createElement("li");
-                                var img = document.createElement("img");
-                                li.appendChild(img);
-                                img.src = sizedImgObj.path;
-                                img.width = 50;
-                                img.style.maxHeight = "100px";
-                                img.style.maxWidth = "50px";
-                                img.className = "image-insert-thumbnail";
-                                ul.appendChild(li);
-                                img.addEventListener("click", function(evt) {
-                                    callback(evt.target.src);
-                                    hideOverlay(imageUploadOverlay);
-                                });
-                            }
-                        }
+                        var uploadedLocation = evt.target.getResponseHeader("Location");
+                        var li = document.createElement("li");
+                        var img = document.createElement("img");
+                        li.appendChild(img);
+                        img.src = uploadedLocation;
+                        img.width = 50;
+                        img.style.maxHeight = "100px";
+                        img.style.maxWidth = "50px";
+                        img.className = "image-insert-thumbnail";
+                        ul.appendChild(li);
+                        img.addEventListener("click", function(evt) {
+                            callback(evt.target.src);
+                            hideOverlay(imageUploadOverlay);
+                        });
                         imageUploadOverlay.appendChild(ul);
                     };
                     xhr.upload.onprogress = function(evt) {
@@ -214,7 +208,7 @@
                             progressEl.value = progressEl.innerHTML = pctComplete;
                         }
                     };
-                    xhr.open("POST", "../assets");
+                    xhr.open("POST", window.droppedFile.name);
                     xhr.send(formData);
 //                    var dataUrl = imageUploadOverlay.getElementsByTagName("img")[0].src;
                 }

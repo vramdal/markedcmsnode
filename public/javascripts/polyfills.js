@@ -7,7 +7,8 @@ window.Element && function(ElementPrototype) {
 	function (selector) {
 		var node = this, nodes = (node.parentNode || node.document).querySelectorAll(selector), i = -1;
  
-		while (nodes[++i] && nodes[i] != node);
+		//noinspection StatementWithEmptyBodyJS
+        while (nodes[++i] && nodes[i] != node);
  
 		return !!nodes[i];
 	}
@@ -56,6 +57,7 @@ function handleJsonError(evt, error, errorCallback) {
     }
 }
 
+/*
 function JsonFetch(url, successCallback, errorCallback) {
 	var xhr = new XMLHttpRequest();
 	xhr.addEventListener("load", function(evt) {
@@ -74,6 +76,7 @@ function JsonFetch(url, successCallback, errorCallback) {
 	xhr.setRequestHeader("Accept", "application/json");
 	xhr.send();
 }
+*/
 
 function TextFetch(url, successCallback, errorCallback) {
 	var xhr = new XMLHttpRequest();
@@ -107,13 +110,15 @@ function HtmlFetch(url, targetEl, errorCallback) {
 		targetEl.innerHTML = html;
 	});
 	xhr.addEventListener("error", function (evt) {
-		targetEl.innerHTML = "<span style=\"color: red\">Error fetching updated content</span>";
+		targetEl.innerHTML = "<span style=\"color: red\">Error fetching updated content" + evt.message + "</span>";
 	});
 	xhr.open("GET", url);
 	xhr.setRequestHeader("Accept", "text/html");
+    xhr.setRequestHeader("Insist-Content-Type", "text/html");
 	xhr.send();
 }
 
+/*
 function JsonPost(url, data, successCallback, errorCallback) {
 var xhr = new XMLHttpRequest();
     xhr.addEventListener("load", function(evt) {
@@ -133,6 +138,7 @@ var xhr = new XMLHttpRequest();
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(data));
 }
+*/
 
 function FormPost(url, data, successCallback, errorCallback) {
     var xhr = new XMLHttpRequest();
@@ -143,5 +149,6 @@ function FormPost(url, data, successCallback, errorCallback) {
         errorCallback(this.responseText, this, evt);
     });
     xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "text/x-markdown");
     xhr.send(data);
 }

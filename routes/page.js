@@ -36,7 +36,12 @@ exports.viewContent = function (persistence) {
                         'basedir': __dirname + "/../views"}
                     );
 
-					var html = templateFn(htmlContents);
+                    var html;
+                    try {
+                        html = templateFn(htmlContents);
+                    } catch (e) {
+                        html = e + "";
+                    }
 					res.end(html);
 				}, errorHandler);
 //				res.render('page', {md: md});

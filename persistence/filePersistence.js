@@ -7,16 +7,18 @@ var rootDir = process.env["filePersistence.rootDir"];
 var CONTENT = {prefix: "content"};
 var PAGES = {prefix: "content", suffix: ".page.json"};
 var TEMPLATES = {prefix: "templates", suffix: ".jade"};
-var ASSETS = {prefix: "assets"};
+//var ASSETS = {prefix: "assets"};
 
 function getFilePath(type, pathStr) {
     return pathTool.join(rootDir, type.prefix, pathStr) + (type.suffix || '');
 }
 
+/*
 function getURLPath(type, filePath) {
 	return filePath.substring(rootDir.length + 1 + type.length);
 }
 
+*/
 function _getFileContents(filePath, callBack, errorHandler) {
 	fs.exists(filePath, function (exists) {
 		if (!exists) {
@@ -75,7 +77,7 @@ exports.getStream = function(pathStr, callBack, errorHandler) {
     fs.exists(filePath, function(exists) {
         if (exists) {
             try {
-                var stream = fs.createReadStream(filePath, {"encoding": "utf8"});
+                var stream = fs.createReadStream(filePath);
                 callBack({
                         "stream": stream,
                         "contentType": mime.lookup(filePath)
@@ -89,6 +91,14 @@ exports.getStream = function(pathStr, callBack, errorHandler) {
     });
 };
 
+exports.saveStream = function(readableStream, pathStr) {
+    var filePath = getFilePath(CONTENT, pathStr);
+    var exists = fs.existsSync(filePath);
+    var writeStream = fs.createWriteStream(filePath);
+    readableStream.pipe(writeStream);
+    return exists;
+};
+
 exports.getTemplate = function(pathStr, callBack, errorHandler) {
     if (!pathStr) {
         errorHandler(500, "No template specified");
@@ -97,10 +107,11 @@ exports.getTemplate = function(pathStr, callBack, errorHandler) {
 	_getFileContents(getFilePath(TEMPLATES, pathStr), callBack, errorHandler);
 };
 
+/*
 exports.getBinaryStream = function(pathStr, errorCallback) {
     var filePath = getFilePath(ASSETS, pathStr);
        try {
-           var stream = fs.createReadStream(pathStr, {
+           var stream = fs.createReadStream(filePath, {
                flags: 'r', encoding: null, fd: null, mode: 0666, autoClose: true
            });
            var mimeType = mime.lookup(pathStr);
@@ -109,9 +120,10 @@ exports.getBinaryStream = function(pathStr, errorCallback) {
                "stream": stream
            };
        } catch (e) {
-           errorHandler(e, pathStr);
+           errorCallback(e, pathStr);
        }
 };
+*/
 
 exports.saveContent = function(pathStr, content, successCallback, errorCallback) {
     var filePath = getFilePath(CONTENT, pathStr);
@@ -120,11 +132,12 @@ exports.saveContent = function(pathStr, content, successCallback, errorCallback)
         if(err) {
             errorCallback(500, err);
         } else {
-            successCallback(existed ? 201 : 200);
+            successCallback(existed ? 200 : 201);
         }
     });
 };
 
+/*
 exports.saveBinary = function (pathStr, data, errorCallback) {
     var filePath = getFilePath(pathStr);
     fs.writeFile(filePath, data, function(err) {
@@ -135,7 +148,9 @@ exports.saveBinary = function (pathStr, data, errorCallback) {
         });
     });
 };
+*/
 
+/*
 exports.copyBinary = function(srcFilePath, successCallback, errorCallback) {
 	var filePath = getFilePath(pathTool.basename(srcFilePath));
 	var cbCalled = false;
@@ -158,4 +173,4 @@ exports.copyBinary = function(srcFilePath, successCallback, errorCallback) {
 			cb(err);
 			cbCalled = true;
 		}
-	}};
+	}};*/
