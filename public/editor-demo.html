@@ -268,7 +268,7 @@
                 window.parent.postMessage(message, window.location.protocol + "//" + window.location.host);
             });
             editor.run();
-            var json = new JsonFetch("/content/" + mdCmsContentId, function(json, fetcher, evt) {
+            var json = new JsonFetch(mdCmsContentId, function(json, fetcher, evt) {
                 textArea.value = json["content"];
                 editor.refreshPreview();
             });

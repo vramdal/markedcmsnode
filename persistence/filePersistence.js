@@ -4,8 +4,8 @@ var mime = require('mime');
 
 
 var rootDir = process.env["filePersistence.rootDir"];
-var CONTENT = {prefix: "content", suffix: ".md"};
-var PAGES = {prefix: "pages", suffix: ".json"};
+var CONTENT = {prefix: "content"};
+var PAGES = {prefix: "content", suffix: ".page.json"};
 var TEMPLATES = {prefix: "templates", suffix: ".jade"};
 var ASSETS = {prefix: "assets"};
 
@@ -17,7 +17,7 @@ function getURLPath(type, filePath) {
 	return filePath.substring(rootDir.length + 1 + type.length);
 }
 
-function _getFile(filePath, callBack, errorHandler) {
+function _getFileContents(filePath, callBack, errorHandler) {
 	fs.exists(filePath, function (exists) {
 		if (!exists) {
 			errorHandler(404);
@@ -42,7 +42,7 @@ function _getFileSync(filePath) {
 }
 
 function _getJson(filePath, callBack, errorHandler) {
-	_getFile(filePath, function(text) {
+	_getFileContents(filePath, function(text) {
 		var json;
 		try {
 			json = JSON.parse(text);
@@ -58,16 +58,43 @@ exports.getContentSync = function(pathStr) {
 	return _getFileSync(getFilePath(CONTENT, pathStr));
 };
 
+exports.getTemplatesPath = function() {
+    return pathTool.join(rootDir, TEMPLATES.prefix);
+};
+
 exports.getContent = function(pathStr, callBack, errorHandler) {
-	_getFile(getFilePath(CONTENT, pathStr), callBack, errorHandler);
+	_getFileContents(getFilePath(CONTENT, pathStr), callBack, errorHandler);
 };
 
 exports.getPage = function(pathStr, callBack, errorHandler) {
 	_getJson(getFilePath(PAGES, pathStr), callBack, errorHandler);
 };
 
+exports.getStream = function(pathStr, callBack, errorHandler) {
+    var filePath = getFilePath(CONTENT, pathStr);
+    fs.exists(filePath, function(exists) {
+        if (exists) {
+            try {
+                var stream = fs.createReadStream(filePath, {"encoding": "utf8"});
+                callBack({
+                        "stream": stream,
+                        "contentType": mime.lookup(filePath)
+                    });
+            } catch (e) {
+                errorHandler(500, e);
+            }
+        } else {
+            errorHandler(404, "File not found");
+        }
+    });
+};
+
 exports.getTemplate = function(pathStr, callBack, errorHandler) {
-	_getFile(getFilePath(TEMPLATES, pathStr), callBack, errorHandler);
+    if (!pathStr) {
+        errorHandler(500, "No template specified");
+        return;
+    }
+	_getFileContents(getFilePath(TEMPLATES, pathStr), callBack, errorHandler);
 };
 
 exports.getBinaryStream = function(pathStr, errorCallback) {

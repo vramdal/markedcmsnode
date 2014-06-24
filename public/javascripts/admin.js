@@ -33,7 +33,7 @@ var adminBootstrap = {
             refreshFromServer: function() {
                 new HtmlFetch(this.mdCmsContentId, this.element,
                         function(response, fetcher, evt) {
-                            alert(response);
+                            // TODO
                         });
             },
 			startEditor: function () {
@@ -67,8 +67,8 @@ var adminBootstrap = {
                 window.document.title = window.document.title + "...";
                 var _this = this;
                 var url = this.mdCmsContentId;
-                new JsonPost(url, {content: this.editFrame.value},
-                        function(json, fetcher, evt) {
+                new FormPost(url, this.editFrame.value,
+                        function(text, fetcher, evt) {
                             window.document.title = window.document.title.substring(0, window.document.title.length - 3);
                             _this.refreshFromServer();
                         },

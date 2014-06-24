@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <!--<link rel="import" href="../bower_components/core-ajax/core-ajax.html">-->
 
-<polymer-element name="mdcms-markdown-editor" attributes="mdCmsContentId morsomt">
+<polymer-element name="mdcms-markdown-editor" attributes="mdCmsContentId">
     <script type="text/javascript" src="../javascripts/polyfills.js"></script>
     <script type="text/javascript" src="../lib/pagedown/Markdown.Converter.js"></script>
     <script type="text/javascript" src="../lib/pagedown/Markdown.Sanitizer.js"></script>
@@ -127,7 +127,6 @@
 
     Polymer('mdcms-markdown-editor', {
         mdCmsContentId: "content-url-goes-here",
-        morsomt: "nei",
         textArea: undefined,
         get value() {
             return this.textArea.value;
@@ -136,7 +135,6 @@
             this.textArea.value = txt;
         },
         attached: function() {
-            alert(this.morsomt);
             var md = Markdown.getSanitizingConverter();
             var _this = this;
 //            var textedit = polymerThis.$["textedit"];
@@ -230,8 +228,8 @@
             });
             editor.run();
             //noinspection JSUnusedLocalSymbols
-            var json = new JsonFetch(this.mdCmsContentId, function(json, fetcher, evt) {
-                _this.textArea.value = json["content"];
+            var json = new TextFetch(this.mdCmsContentId, function(text, fetcher, evt) {
+                _this.textArea.value = text;
                 editor.refreshPreview();
             });
 

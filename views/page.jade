@@ -1,11 +1,15 @@
 doctype html
-case isAdmin
-    when true
-        extends admin-base
-    default
-        extends public-base
+//case isAdmin
+//    when true
+//        extends admin-base
+//    default
+//        extends public-base
 
 html
     head
     block body
         h1 Laks
+            //var contentBlocks = cq(/^/content/index.*?$/)
+            //each contentBlock in contentBlocks
+            //    h1 Innhold:
+            //        +block(contentBlock.id, contentBlock.content)

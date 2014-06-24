@@ -75,6 +75,26 @@ function JsonFetch(url, successCallback, errorCallback) {
 	xhr.send();
 }
 
+function TextFetch(url, successCallback, errorCallback) {
+	var xhr = new XMLHttpRequest();
+	xhr.addEventListener("load", function(evt) {
+		var text;
+		try {
+			text = this.responseText;
+		} catch (e) {
+            handleJsonError(evt, e, errorCallback);
+		}
+		successCallback(text, this, evt);
+	});
+	xhr.addEventListener("error", function(evt) {
+		errorCallback(this.response, this, evt);
+	});
+	xhr.open("GET", url);
+	xhr.setRequestHeader("Accept", "application/json");
+	xhr.send();
+}
+
+
 function HtmlFetch(url, targetEl, errorCallback) {
 	var xhr = new XMLHttpRequest();
 	xhr.addEventListener("load", function (evt) {
@@ -90,7 +110,7 @@ function HtmlFetch(url, targetEl, errorCallback) {
 		targetEl.innerHTML = "<span style=\"color: red\">Error fetching updated content</span>";
 	});
 	xhr.open("GET", url);
-	xhr.setRequestHeader("Accept", "text/htmlfragment");
+	xhr.setRequestHeader("Accept", "text/html");
 	xhr.send();
 }
 
@@ -112,4 +132,16 @@ var xhr = new XMLHttpRequest();
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(data));
+}
+
+function FormPost(url, data, successCallback, errorCallback) {
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener("load", function(evt) {
+        successCallback(this.responseText, this, evt);
+    });
+    xhr.addEventListener("error", function(evt) {
+        errorCallback(this.responseText, this, evt);
+    });
+    xhr.open("POST", url);
+    xhr.send(data);
 }
