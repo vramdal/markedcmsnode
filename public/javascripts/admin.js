@@ -4,7 +4,7 @@ var adminBootstrap = {
         try {
             var adminCssEl = document.createElement("style");
             adminCssEl.setAttribute("type", "text/css");
-            adminCssEl.appendChild(document.createTextNode("@import url('/stylesheets/view-admin.css');"));
+            adminCssEl.appendChild(document.createTextNode("@import url('/public/stylesheets/view-admin.css');"));
             head.appendChild(adminCssEl);
         } catch (e) {
             console.error("Kunne ikke legge til admin-stylesheet", e);

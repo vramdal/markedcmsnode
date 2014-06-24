@@ -51,9 +51,9 @@ app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(persistence));
 app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
-app.get(/^\/page\/(.+)$/, pageRoute.viewContent(persistence));
-app.get(/^\/content\/(.+)$/, publicContent.viewContent(persistence));
-app.post(/^\/content\/(.+)$/, publicContent.saveContent(persistence));
+app.get(/^\/(?!assets\/)(?!public\/)(.+)$/, pageRoute.viewContent(persistence));
+//app.get(/^\/content\/(.+)$/, publicContent.viewContent(persistence));
+//app.post(/^\/content\/(.+)$/, publicContent.saveContent(persistence));
 
 app.use(function (err, req, res, next) {
 	res.status(500);

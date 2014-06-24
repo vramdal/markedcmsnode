@@ -4,13 +4,17 @@ var mime = require('mime');
 
 
 var rootDir = process.env["filePersistence.rootDir"];
+var CONTENT = {prefix: "content", suffix: ".md"};
+var PAGES = {prefix: "pages", suffix: ".json"};
+var TEMPLATES = {prefix: "templates", suffix: ".jade"};
+var ASSETS = {prefix: "assets"};
 
-function getFilePath(pathStr) {
-    return pathTool.join(rootDir, pathStr);
+function getFilePath(type, pathStr) {
+    return pathTool.join(rootDir, type.prefix, pathStr) + (type.suffix || '');
 }
 
-function getURLPath(filePath) {
-	return filePath.substring(rootDir.length);
+function getURLPath(type, filePath) {
+	return filePath.substring(rootDir.length + 1 + type.length);
 }
 
 function _getFile(filePath, callBack, errorHandler) {
@@ -28,18 +32,46 @@ function _getFile(filePath, callBack, errorHandler) {
 		}
 	});
 }
+
+function _getFileSync(filePath) {
+	if (!fs.existsSync(filePath)) {
+		throw new Error(404);
+	} else {
+		return fs.readFileSync(filePath, {"encoding": "utf8", "flag": "r"});
+	}
+}
+
+function _getJson(filePath, callBack, errorHandler) {
+	_getFile(filePath, function(text) {
+		var json;
+		try {
+			json = JSON.parse(text);
+		} catch (e) {
+			errorHandler(500, e);
+			return;
+		}
+		callBack(json);
+	}, errorHandler);
+}
+
+exports.getContentSync = function(pathStr) {
+	return _getFileSync(getFilePath(CONTENT, pathStr));
+};
+
 exports.getContent = function(pathStr, callBack, errorHandler) {
-	var filePath = getFilePath(pathStr) + ".md";
-	_getFile(filePath, callBack, errorHandler);
+	_getFile(getFilePath(CONTENT, pathStr), callBack, errorHandler);
 };
 
 exports.getPage = function(pathStr, callBack, errorHandler) {
-	var filePath = getFilePath(pathStr + ".page");
-	_getFile(filePath, callBack, errorHandler);
+	_getJson(getFilePath(PAGES, pathStr), callBack, errorHandler);
+};
+
+exports.getTemplate = function(pathStr, callBack, errorHandler) {
+	_getFile(getFilePath(TEMPLATES, pathStr), callBack, errorHandler);
 };
 
 exports.getBinaryStream = function(pathStr, errorCallback) {
-    var filePath = getFilePath(pathStr);
+    var filePath = getFilePath(ASSETS, pathStr);
        try {
            var stream = fs.createReadStream(pathStr, {
                flags: 'r', encoding: null, fd: null, mode: 0666, autoClose: true
@@ -55,9 +87,9 @@ exports.getBinaryStream = function(pathStr, errorCallback) {
 };
 
 exports.saveContent = function(pathStr, content, successCallback, errorCallback) {
-    var filePath = getFilePath(pathStr);
+    var filePath = getFilePath(CONTENT, pathStr);
     var existed = fs.existsSync(filePath);
-    fs.writeFile(filePath + ".md", content, function(err) {
+    fs.writeFile(filePath, content, function(err) {
         if(err) {
             errorCallback(500, err);
         } else {

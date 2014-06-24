@@ -1,15 +1,15 @@
 doctype html
-mixin block(id, content)
+mixin block(contentBlock)
   include includes/content
 html
   head
     title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
-    script(src='/bower_components/platform/platform.js')
-    link(rel='import', href='/bower_components/polymer/polymer.html')
-    script(type='text/javascript', src='/javascripts/admin.js')
-    link(rel='import', href="/components/markdown-editor.html")
+    link(rel='stylesheet', href='/public/stylesheets/style.css')
+    script(src='/public/bower_components/platform/platform.js')
+    link(rel='import', href='/public/bower_components/polymer/polymer.html')
+    script(type='text/javascript', src='/public/javascripts/admin.js')
+    link(rel='import', href="/public/components/markdown-editor.html")
   body
       block body
-        each contentBlock in contentBlocks
-          +block(contentBlock.id, contentBlock.content)
+        //each contentBlock in contentBlocks
+        //  +block(contentBlock.id, contentBlock.content)
