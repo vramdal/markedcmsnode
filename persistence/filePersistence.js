@@ -7,6 +7,7 @@ var rootDir = process.env["filePersistence.rootDir"];
 var CONTENT = {prefix: "content"};
 var PAGES = {prefix: "content", suffix: ".page.json"};
 var TEMPLATES = {prefix: "templates", suffix: ".jade"};
+var STATIC = {prefix: ""};
 //var ASSETS = {prefix: "assets"};
 
 function getFilePath(type, pathStr) {
@@ -20,9 +21,10 @@ function getURLPath(type, filePath) {
 
 */
 function _getFileContents(filePath, callBack, errorHandler) {
+	console.info("Getting contents of " + filePath);
 	fs.exists(filePath, function (exists) {
 		if (!exists) {
-			errorHandler(404);
+			errorHandler(404, filePath);
 		} else {
 			fs.readFile(filePath, {"encoding": "utf8", "flag": "r"}, function (err, data) {
 				if (err) {
@@ -74,22 +76,30 @@ exports.getPage = function(pathStr, callBack, errorHandler) {
 
 exports.getStream = function(pathStr, callBack, errorHandler) {
     var filePath = getFilePath(CONTENT, pathStr);
-    fs.exists(filePath, function(exists) {
-        if (exists) {
-            try {
-                var stream = fs.createReadStream(filePath);
-                callBack({
-                        "stream": stream,
-                        "contentType": mime.lookup(filePath)
-                    });
-            } catch (e) {
-                errorHandler(500, e);
-            }
-        } else {
-            errorHandler(404, "File not found");
-        }
-    });
+	_getStream(filePath, callBack, errorHandler);
 };
+
+exports.getStaticStream = function(pathStr, callBack, errorHandler) {
+	var filePath = getFilePath(STATIC, pathStr);
+	_getStream(filePath, callBack, errorHandler);
+};
+function _getStream(filePath, callBack, errorHandler) {
+	fs.exists(filePath, function (exists) {
+		if (exists) {
+			try {
+				var stream = fs.createReadStream(filePath);
+				callBack({
+					"stream": stream,
+					"contentType": mime.lookup(filePath)
+				});
+			} catch (e) {
+				errorHandler(500, e);
+			}
+		} else {
+			errorHandler(404, "File not found");
+		}
+	});
+}
 
 exports.saveStream = function(readableStream, pathStr) {
     var filePath = getFilePath(CONTENT, pathStr);
