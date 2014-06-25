@@ -48,9 +48,8 @@ var adminBootstrap = {
                 editFrame.setAttribute("class", "edit-frame");
                 editFrame.setAttribute("frameborder", "0");
                 editFrame.setAttribute("mdCmsContentId", this.mdCmsContentId);
-                editFrame.setAttribute("morsomt", "Javisst!");
 				editFrame.setAttribute("src", "/editor-demo.html?mdcms-content-id=" + this.mdCmsContentId);
-                editFrame.style.width = Math.max(200, elementPosition.width) + "px";
+                editFrame.style.width = Math.max(500, elementPosition.width) + "px";
                 editFrame.style.height = Math.max(200, elementPosition.height) + "px";
                 editFrame.style.top = elementPosition.bottom + "px";
                 editFrame.style.left = elementPosition.left + "px";

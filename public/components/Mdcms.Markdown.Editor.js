@@ -1510,8 +1510,10 @@
                 buttonRow.appendChild(helpButton);
                 buttons.help = helpButton;
             }
+			makeSpacer(4);
+			buttons.save = makeButton("wmd-save-button", getString("save"), "-260px", null);
 
-            setUndoRedoButtonStates();
+			setUndoRedoButtonStates();
         }
 
         function setUndoRedoButtonStates() {

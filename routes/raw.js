@@ -12,6 +12,18 @@ exports.getFile = function(persistence) {
     }
 };
 
+exports.getStaticFile = function(persistence) {
+	return function(req, res, next) {
+		persistence.getStaticStream(req.path, function (fileSpec) {
+			res.setHeader("Content-Type", fileSpec["contentType"]);
+			fileSpec.stream.pipe(res);
+		}, function (errorCode, error) {
+			res.writeHead(errorCode, error);
+			res.end(error);
+		});
+	}
+};
+
 exports.saveText = function(persistence) {
     return function(req, res) {
         var data = '';
