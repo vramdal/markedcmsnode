@@ -1,6 +1,7 @@
 var pathTool = require('path');
 var fs = require("fs");
 var mime = require('mime');
+var Resource = require('../util/Resource');
 
 
 var rootDir = process.env["filePersistence.rootDir"];
@@ -11,7 +12,11 @@ var STATIC = {prefix: ""};
 //var ASSETS = {prefix: "assets"};
 
 function getFilePath(type, pathStr) {
-    return pathTool.join(rootDir, type.prefix, pathStr) + (type.suffix || '');
+    if (type) {
+        return pathTool.join(rootDir, type.prefix, pathStr) + (type.suffix || '');
+    } else {
+        return pathTool.join(rootDir, pathStr);
+    }
 }
 
 /*
@@ -36,6 +41,28 @@ function _getFileContents(filePath, callBack, errorHandler) {
 		}
 	});
 }
+
+exports.getResource = function(filePath, resourceCb, errorHandler) {
+    var internalPath = getFilePath(null, filePath);
+    try {
+        fs.open(internalPath, "r", function (err, fd) {
+            if (err) {
+                console.error("Feil ved åpning av " + internalPath);
+                errorHandler(err);
+                return;
+            }
+            var stream;
+            try {
+                stream = fs.createReadStream(filePath, { "fd": fd });
+            } catch (e) {
+                return resourceCb(null);
+            }
+            return resourceCb(new Resource(filePath, mime.lookup(internalPath), stream));
+        });
+    } catch (e) {
+        return resourceCb(null);
+    }
+};
 
 function _getFileSync(filePath) {
 	if (!fs.existsSync(filePath)) {

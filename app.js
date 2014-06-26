@@ -16,6 +16,8 @@ var persistence = require('./persistence/' + process.env["persistence"]);
 var serveContentNegotiator = require('./middleware/contentNegotiator');
 var uploadContentNegotiator = require('./middleware/uploadContentNegotiator');
 var markdownRoute = require('./routes/markdownRoute');
+var resourceResolver = require('./middleware/resourceResolver');
+var rewrite = require('./middleware/requestRewriter');
 
 // New Code
 var mongo = require('mongodb');
@@ -54,12 +56,17 @@ app.post("/assets", assetsRoute.upload(persistence));
 app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
+
+app.get(/^\/test\/.+$/, rewrite.lastPart(/(.+)/, "$1.md"),  resourceResolver.resolve([persistence]));
+
 app.get(/^\/static\/.+$/, rawRoute.getStaticFile(persistence));
+/*
 app.get(/^\/(?!assets\/)(?!public\/)(?!(.*?\..+)$)(.+)$/, pageRoute.viewContent(persistence));
 app.get(/^\/(?!assets\/)(?!public\/)(?!static\/).*?\..+$/,
         serveContentNegotiator.negotiator({
             "text/html": markdownRoute.preview(persistence)
         }, rawRoute.getFile(persistence)));
+*/
 app.post(/^\/(?!assets\/)(?!public\/)(?!static\/).*?\..+$/,
         uploadContentNegotiator.uploadNegotiator({
             "text/x-markdown": rawRoute.saveText(persistence),
