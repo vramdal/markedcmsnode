@@ -16,9 +16,10 @@ var persistence = require('./persistence/' + process.env["persistence"]);
 var serveContentNegotiator = require('./middleware/contentNegotiator');
 var uploadContentNegotiator = require('./middleware/uploadContentNegotiator');
 var markdownRoute = require('./routes/markdownRoute');
-var resourceResolver = require('./middleware/resourceResolver');
+var resourceResolverLib = require('./middleware/resourceResolver');
 var rewrite = require('./middleware/requestRewriter');
-var renderers = require('./middleware/renderers');
+var RendererResolver = require('./middleware/RendererResolver');
+var pageRenderer = require('./renderers/pageRenderer');
 
 // New Code
 var mongo = require('mongodb');
@@ -58,11 +59,17 @@ app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
 
+var resourceResolver = resourceResolverLib.resolve([persistence]);
+
+var requestRendererResolver = new RendererResolver();
+requestRendererResolver.registerRenderer("application/json", pageRenderer(resourceResolver));
+
+
 app.get(/^\/test\/.+$/,
 		rewrite.path(/^\/test\/(.*)/, "/content/$1"),
 		rewrite.lastPart(/(.+)/, "$1.page.json"),
-		resourceResolver.resolve([persistence]),
-		renderers.render(resourceResolver));
+        resourceResolver,
+		requestRendererResolver.render(resourceResolver));
 
 app.get(/^\/static\/.+$/, rawRoute.getStaticFile(persistence));
 /*
