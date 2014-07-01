@@ -4,6 +4,7 @@ exports.resolve = function(resourceProviderArr) {
         resourceFetcher(resourceProviderArr, path,
                 function(resource) {
                     resource.requestPath = req.path;
+					req.resource = resource;
                     console.log("Got resource: ", resource);
                     next();
                 },
@@ -31,5 +32,6 @@ function resourceFetcher(resourceProviderArr, path, resourceCb, errorCb) {
             },
             function(error) {
                 console.error("ResourceFetcher error", error);
+				errorCb(404, error);
             });
 }
