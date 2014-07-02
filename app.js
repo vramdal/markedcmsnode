@@ -19,6 +19,7 @@ var ResourceResolver = require('./middleware/resourceResolver');
 var rewrite = require('./middleware/requestRewriter');
 var RendererResolver = require('./middleware/RendererResolver');
 var pageRenderer = require('./renderers/pageRenderer');
+var errorRenderer = require('./renderers/errorRenderer');
 require("./util/polyfills");
 
 // New Code
@@ -69,6 +70,7 @@ var resourceResolver = new ResourceResolver([persistence]);
 
 var requestRendererResolver = new RendererResolver();
 requestRendererResolver.registerRenderer("markedcms/page", pageRenderer(resourceResolver));
+requestRendererResolver.registerRenderer("error/404", errorRenderer());
 
 
 app.get(/^\/test\/.+$/,
@@ -76,6 +78,11 @@ app.get(/^\/test\/.+$/,
 		rewrite.lastPart(/(.+)/, "$1.page.json"),
         resourceResolver.resolveRequest(siteRootPath),
 		requestRendererResolver.render(resourceResolver));
+
+app.post(/^\/test\/.+$/,
+		rewrite.path(/^\/test\/(.*)/, "/content/$1"),
+		resourceResolver.resolveRequest(siteRootPath)
+);
 
 app.get(/^\/static\/.+$/, rawRoute.getStaticFile(persistence));
 /*

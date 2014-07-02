@@ -28,7 +28,16 @@ function Resource(path, mimeType, stream) {
             callback(JSON.parse(str))
         });
     };
-
+	this.isError = function() {
+		return mimeType.startsWith("error/");
+	};
+	this.getErrorCode = function() {
+		if (!this.isError()) {
+			return null;
+		} else {
+			return mimeType.substringAfter("error/");
+		}
+	}
 }
 
 module.exports = Resource;

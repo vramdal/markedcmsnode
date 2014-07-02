@@ -158,6 +158,10 @@ exports.getTemplate = function(pathStr, callBack, errorHandler) {
 	_getFileContents(getFilePath(TEMPLATES, pathStr), callBack, errorHandler);
 };
 
+exports.canInsert = function(pathStr, mimeType, callback) {
+	callback(null, false);
+};
+
 /*
 exports.getBinaryStream = function(pathStr, errorCallback) {
     var filePath = getFilePath(ASSETS, pathStr);
