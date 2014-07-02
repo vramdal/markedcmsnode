@@ -19,6 +19,7 @@ var ResourceResolver = require('./middleware/resourceResolver');
 var rewrite = require('./middleware/requestRewriter');
 var RendererResolver = require('./middleware/RendererResolver');
 var pageRenderer = require('./renderers/pageRenderer');
+require("./util/polyfills");
 
 // New Code
 var mongo = require('mongodb');

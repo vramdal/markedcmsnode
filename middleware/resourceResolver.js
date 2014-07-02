@@ -7,6 +7,11 @@ module.exports = function ResourceResolver(resourceProviderArr) {
             resourceFetcher(self.resourceProviderArr, path,
                     function(resource) {
                         console.log("Got resource: ", resource);
+						if (resource == null && req.method == "GET") {
+							res.writeHead(404);
+							res.end("404 Not Found");
+							return;
+						}
                         if (!(req instanceof String)) {
                             resource.requestPath = req.path;
                             resource.siteRootPath = siteRootPath;
@@ -32,8 +37,7 @@ module.exports = function ResourceResolver(resourceProviderArr) {
 
 function resourceFetcher(resourceProviderArr, path, resourceCb, errorCb) {
     if (resourceProviderArr.length == 0) {
-        errorCb(404, "Not found");
-        return;
+		resourceCb(null);
     }
     var resourceProvider = resourceProviderArr[0];
     resourceProvider.getResource(path,

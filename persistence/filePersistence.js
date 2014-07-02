@@ -71,7 +71,7 @@ exports.getResourceSync = function(filePath) {
 };
 
 function getMimeType(path) {
-    if (/(?:.*\/).+\.page\.json/.test(path)) {
+    if (pathTool.basename(path).endsWith(".page.json")) {
         return "markedcms/page";
     } else {
         return mime.lookup(path);
