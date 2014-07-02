@@ -6,7 +6,6 @@
 var express = require('express');
 var routes = require('./routes');
 var user = require('./routes/user');
-var pageRoute = require("./routes/page");
 var assetsRoute = require('./routes/assets');
 var rawRoute = require('./routes/raw');
 var image = require('./routes/image');
@@ -16,7 +15,7 @@ var persistence = require('./persistence/' + process.env["persistence"]);
 var serveContentNegotiator = require('./middleware/contentNegotiator');
 var uploadContentNegotiator = require('./middleware/uploadContentNegotiator');
 var markdownRoute = require('./routes/markdownRoute');
-var resourceResolverLib = require('./middleware/resourceResolver');
+var ResourceResolver = require('./middleware/resourceResolver');
 var rewrite = require('./middleware/requestRewriter');
 var RendererResolver = require('./middleware/RendererResolver');
 var pageRenderer = require('./renderers/pageRenderer');
@@ -27,6 +26,12 @@ var monk = require('monk');
 //var db = monk('localhost:27017/nodetest1');
 
 var app = express();
+
+var siteRootPath = process.env["filePersistence.rootDir"];
+
+if (!siteRootPath) {
+    throw new Error("No SITE_ROOT_PATH set");
+}
 
 // all environments
 app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
@@ -59,16 +64,16 @@ app.use("/assets", express.static(__dirname + "/../assets"));
 app.use("/public", express.static(__dirname + "/public"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
 
-var resourceResolver = resourceResolverLib.resolve([persistence]);
+var resourceResolver = new ResourceResolver([persistence]);
 
 var requestRendererResolver = new RendererResolver();
-requestRendererResolver.registerRenderer("application/json", pageRenderer(resourceResolver));
+requestRendererResolver.registerRenderer("markedcms/page", pageRenderer(resourceResolver));
 
 
 app.get(/^\/test\/.+$/,
 		rewrite.path(/^\/test\/(.*)/, "/content/$1"),
 		rewrite.lastPart(/(.+)/, "$1.page.json"),
-        resourceResolver,
+        resourceResolver.resolveRequest(siteRootPath),
 		requestRendererResolver.render(resourceResolver));
 
 app.get(/^\/static\/.+$/, rawRoute.getStaticFile(persistence));

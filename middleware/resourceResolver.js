@@ -1,20 +1,34 @@
-exports.resolve = function(resourceProviderArr) {
-    return function(req, res, next) {
-        var path = req.resourcePath || req.path;
-        resourceFetcher(resourceProviderArr, path,
-                function(resource) {
-                    resource.requestPath = req.path;
-					req.resource = resource;
-                    console.log("Got resource: ", resource);
-                    next();
-                },
-                function(errorCode, error) {
-//                    next("ResourceResolver error: " + errorCode + " " +  error);
-                    res.writeHead(errorCode);
-                    res.end(errorCode + " " + error);
-                });
-    }
+module.exports = function ResourceResolver(resourceProviderArr) {
+    this.resourceProviderArr = resourceProviderArr;
+    this.resolveRequest = function(siteRootPath) {
+        var self = this;
+        return function(req, res, next) {
+            var path = (req instanceof String) ? req : (req.resourcePath || req.path);
+            resourceFetcher(self.resourceProviderArr, path,
+                    function(resource) {
+                        console.log("Got resource: ", resource);
+                        if (!(req instanceof String)) {
+                            resource.requestPath = req.path;
+                            resource.siteRootPath = siteRootPath;
+                            req.resource = resource;
+                        }
+                        if (next) {
+                            next();
+                        }
+                    },
+                    function(errorCode, error) {
+    //                    next("ResourceResolver error: " + errorCode + " " +  error);
+                        res.writeHead(errorCode);
+                        res.end(errorCode + " " + error);
+                    });
+        }
+    };
+    this.resolvePath = function(path, successCallback, errorCallback) {
+        var self = this;
+        resourceFetcher(self.resourceProviderArr, path, successCallback, errorCallback);
+    };
 };
+
 
 function resourceFetcher(resourceProviderArr, path, resourceCb, errorCb) {
     if (resourceProviderArr.length == 0) {

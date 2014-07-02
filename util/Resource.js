@@ -12,17 +12,22 @@ function Resource(path, mimeType, stream) {
     this.getStream = function() {
         return this.stream;
     };
-    this.getJSON = function(callback) {
+    this.getString = function (callback) {
         var stream = this.getStream();
-        var jsonString = "";
-        stream.on("data", function(chunk) {
-            jsonString += chunk;
+        var str = "";
+        stream.on("data", function (chunk) {
+            str += chunk;
         });
-        stream.on("end", function() {
-            console.log("Har lest: " + jsonString);
-            callback(JSON.parse(jsonString));
+        stream.on("end", function () {
+            console.log("Har lest: " + str);
+            callback(str);
         });
-    }
+    };
+    this.getJSON = function(callback) {
+        this.getString(function(str) {
+            callback(JSON.parse(str))
+        });
+    };
 
 }
 

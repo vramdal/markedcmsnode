@@ -57,12 +57,26 @@ exports.getResource = function(filePath, resourceCb, errorHandler) {
             } catch (e) {
                 return resourceCb(null);
             }
-            return resourceCb(new Resource(filePath, mime.lookup(internalPath), stream));
+            return resourceCb(new Resource(filePath, getMimeType(internalPath), stream));
         });
     } catch (e) {
         return resourceCb(null);
     }
 };
+
+exports.getResourceSync = function(filePath) {
+    var internalPath = getFilePath(null, filePath);
+    var stream = fs.createReadStream(fs.openSync(internalPath, "r"));
+    return new Resource(filePath, getMimeType(internalPath), stream);
+};
+
+function getMimeType(path) {
+    if (/(?:.*\/).+\.page\.json/.test(path)) {
+        return "markedcms/page";
+    } else {
+        return mime.lookup(path);
+    }
+}
 
 function _getFileSync(filePath) {
 	if (!fs.existsSync(filePath)) {
@@ -117,7 +131,7 @@ function _getStream(filePath, callBack, errorHandler) {
 				var stream = fs.createReadStream(filePath);
 				callBack({
 					"stream": stream,
-					"contentType": mime.lookup(filePath)
+					"contentType": getMimeType(filePath)
 				});
 			} catch (e) {
 				errorHandler(500, e);

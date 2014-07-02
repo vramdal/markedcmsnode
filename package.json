@@ -7,15 +7,16 @@
     "start": "node ./app.js"
   },
   "dependencies": {
-      "express": "~3.5.0",
-      "jade": "*",
-      "mongodb": "*",
-	  "multiparty": "*",
-	  "monk": "*",
-	  "gm": "~1.16.0",
-	  "mime": "~1.2.11",
-	  "pagedown": "*",
-      "marked": "*",
-	  "bluebird": "~2.1.3"
+    "express": "~3.5.0",
+    "jade": "*",
+    "mongodb": "*",
+    "multiparty": "*",
+    "monk": "*",
+    "gm": "~1.16.0",
+    "mime": "~1.2.11",
+    "pagedown": "*",
+    "marked": "*",
+    "bluebird": "~2.1.3",
+    "async": "~0.9.0"
   }
 }
