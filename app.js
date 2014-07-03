@@ -21,6 +21,7 @@ var RendererResolver = require('./middleware/RendererResolver');
 var pageRenderer = require('./renderers/pageRenderer');
 var errorRenderer = require('./renderers/errorRenderer');
 require("./util/polyfills");
+var siteRootPath = process.env["filePersistence.rootDir"];
 
 // New Code
 var mongo = require('mongodb');
@@ -29,11 +30,22 @@ var monk = require('monk');
 
 var app = express();
 
-var siteRootPath = process.env["filePersistence.rootDir"];
 
 if (!siteRootPath) {
     throw new Error("No SITE_ROOT_PATH set");
 }
+
+var jsDAV_Server = require("jsDAV/lib/DAV/server");
+console.log("jsDAV " + jsDAV_Server.VERSION + " is installed.");
+var jsDAV = require("jsDAV/lib/jsdav");
+// setting debugMode to TRUE outputs a LOT of information to console
+//jsDAV.debugMode = true;
+var jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
+jsDAV.createServer({
+    "node": path.join(siteRootPath),
+    "locksBackend": jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks")),
+}, 8000);
+
 
 // all environments
 app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
