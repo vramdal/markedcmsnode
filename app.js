@@ -41,10 +41,28 @@ var jsDAV = require("jsDAV/lib/jsdav");
 // setting debugMode to TRUE outputs a LOT of information to console
 //jsDAV.debugMode = true;
 var jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
+var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
+/*
 jsDAV.createServer({
     "node": path.join(siteRootPath),
-    "locksBackend": jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks")),
+    "locksBackend": locksBackend,
 }, 8000);
+*/
+
+// From https://gist.github.com/touv/11045459
+app.use(function (req, res, next) {
+	if (req.url.search(/^\/webdav/) >= 0) {
+		jsDAV.mount({
+			node: path.join(siteRootPath),
+			mount: "/webdav",
+			server: req.app,
+			standalone: false,
+			"locksBackend": locksBackend
+		}.exec(req, res));
+	} else {
+		next();
+	}
+});
 
 
 // all environments
