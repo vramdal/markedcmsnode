@@ -22,6 +22,7 @@ var pageRenderer = require('./renderers/pageRenderer');
 var errorRenderer = require('./renderers/errorRenderer');
 require("./util/polyfills");
 var siteRootPath = process.env["filePersistence.rootDir"];
+var responseProxy = require('./util/responseProxy');
 
 // New Code
 var mongo = require('mongodb');
@@ -50,18 +51,42 @@ jsDAV.createServer({
 */
 
 // From https://gist.github.com/touv/11045459
+app.use(function(req, res, next) {
+    if (req.url.search(/^\/.*\/$/) >= 0) {
+        req.url = req.url + "index.page.json";
+        req.headers["X-MarkedCMS-Render"] = "true";
+    }
+    next();
+});
+app.use(function(req, res, next) {
+    if (req.headers["X-MarkedCMS-Render"]) {
+        if (req.headers["if-modified-since"]) {
+            delete req.headers["if-modified-since"];
+        }
+        if (req.headers["if-none-match"]) {
+            delete req.headers["if-none-match"];
+        }
+        console.log("Page: " + req.url);
+        responseProxy.makeProxy(res);
+        next();
+    } else {
+        next();
+    }
+});
 app.use(function (req, res, next) {
-	if (req.url.search(/^\/webdav/) >= 0) {
-		jsDAV.mount({
-			node: path.join(siteRootPath),
-			mount: "/webdav",
-			server: req.app,
-			standalone: false,
-			"locksBackend": locksBackend
-		}.exec(req, res));
-	} else {
-		next();
-	}
+//	if (req.url.search(/^\/webdav/) >= 0) {
+    var jsDavService = jsDAV.mount({
+        node:           path.join(siteRootPath),
+        mount:          "/",
+        server:         req.app,
+        standalone:     false,
+        "locksBackend": locksBackend
+    });
+    jsDavService.exec(req, res);
+//    next();
+//	} else {
+//		next();
+//	}
 });
 
 
