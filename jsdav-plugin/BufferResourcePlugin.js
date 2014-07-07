@@ -83,6 +83,8 @@ var jsDAV_BufferResource_Plugin = module.exports = jsDAV_ServerPlugin.extend({
             var mime = mimeTool.lookup(path);
             if (mime == "application/json" && path.endsWith(".page.json")) {
                 mime = "X-mdcms/page";
+            } else if (mime == "text/x-markdown" && path.endsWith(".md")) {
+                mime = "X-mdcms/md-content"
             }
 
             var stream = Fs.createReadStream(path);

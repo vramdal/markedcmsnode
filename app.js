@@ -19,8 +19,10 @@ var ResourceResolver = require('./middleware/resourceResolver');
 var rewrite = require('./middleware/requestRewriter');
 var RendererResolver = require('./middleware/RendererResolver');
 var pageRenderer = require('./renderers/pageRenderer');
+var markdownContentRenderer = require('./renderers/markdownContentRenderer');
 //var errorRenderer = require('./renderers/errorRenderer');
 var pageCompiler = require("./routes/pageCompiler");
+var markdownContentCompiler = require("./routes/markdownContentCompiler");
 require("./util/polyfills");
 var siteRootPath = process.env["filePersistence.rootDir"];
 var responseProxy = require('./util/responseProxy');
@@ -32,11 +34,13 @@ var monk = require('monk');
 //var db = monk('localhost:27017/nodetest1');
 
 var compilers = {
-    "X-mdcms/page": pageCompiler
+    "X-mdcms/page": pageCompiler,
+    "X-mdcms/md-content": markdownContentCompiler
 };
 
 var renderers = {
-    "X-mdcms/page": pageRenderer
+    "X-mdcms/page": pageRenderer,
+    "X-mdcms/md-content": markdownContentRenderer
 };
 var app = express();
 
@@ -84,10 +88,10 @@ app.all("*",
                 req["markedCms"].bufferResource = true;
                 req["markedCms"].render = true;
             }
-            if (req.headers["X-MarkedCms-BufferResource"]) {
+            if (req.headers["x-markedcms-bufferresource"]) {
                 req["markedCms"].bufferResource = true;
             }
-            if (req.headers["X-MarkedCms-Render"]) {
+            if (req.headers["x-markedcms-render"]) {
                 req["markedCms"].render = true;
             }
             return next();
@@ -123,19 +127,6 @@ app.all("*",
             next();
         }
 );
-/*
-app.use(function(req, res, next) {
-    if (req.headers["X-MarkedCMS-Render"]) {
-        console.log("Page: " + req.url);
-        pageCompiler.render(req, res, next);
-//        pageRenderer.renderProxiedResponse(req, res, next);
-//        responseProxy.makeProxy(req, res, next, pageRenderer.renderProxiedResponse);
-//        next();
-    } else {
-        next();
-    }
-});
-*/
 /*
 app.use(function (req, res, next) {
 //	if (req.url.search(/^\/webdav/) >= 0) {
