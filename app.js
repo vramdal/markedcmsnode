@@ -78,7 +78,7 @@ app.use("/public", express.static(__dirname + "/public"));
 app.all("*",
         function(req, res, next) {
             req["markedCms"] = {};
-            req["markedCms"].siteRootPath = "/Users/vramdal/temp/markedcms-content";
+            req["markedCms"].siteRootPath = siteRootPath;
             req["markedCms"].templatePath = "templates";
             return next();
         },

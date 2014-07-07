@@ -15,5 +15,4 @@ module.exports = function(req, res, next) {
     var contentBlock = {"id": resource.getPath(), "html": md(resource.content)};
     var html = templateFn({contentBlock: contentBlock});
     res.end(html);
-
 };
