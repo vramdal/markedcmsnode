@@ -1,7 +1,8 @@
-function Resource(path, mimeType, stream) {
+function Resource(path, mimeType, stream, size) {
     this.path = path;
     this.mimeType = mimeType;
     this.stream = stream;
+    this.size = size;
 
     this.getPath = function() {
         return this.path;
@@ -18,14 +19,17 @@ function Resource(path, mimeType, stream) {
         stream.on("data", function (chunk) {
             str += chunk;
         });
+        stream.on("error", function(err) {
+            callback(err);
+        });
         stream.on("end", function () {
             console.log("Har lest: " + str);
-            callback(str);
+            callback(null, str);
         });
     };
     this.getJSON = function(callback) {
-        this.getString(function(str) {
-            callback(JSON.parse(str))
+        this.getString(function(err, str) {
+            callback(err, JSON.parse(str))
         });
     };
 	this.isError = function() {
@@ -37,7 +41,10 @@ function Resource(path, mimeType, stream) {
 		} else {
 			return mimeType.substringAfter("error/");
 		}
-	}
+	};
+    this.getSize = function() {
+        return this.size;
+    }
 }
 
 module.exports = Resource;

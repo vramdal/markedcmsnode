@@ -1,4 +1,4 @@
-exports.makeProxy = function(res) {
+exports.makeProxy = function(req, res, next, callback) {
     res.markedCms = {
         "string": "",
         "originalEnd": res.end,
@@ -18,8 +18,12 @@ exports.makeProxy = function(res) {
             res.markedCms.string += chunk;
         }
         console.log("Data: " + res.markedCms.string);
-        res.markedCms.originalWriteHead.call(res, res.markedCms.statusCode, res.markedCms.reasonPhrase, res.markedCms.headers);
-        res.markedCms.originalEnd.call(res, res.markedCms.string);
+//        res.markedCms.originalWriteHead.call(res, res.markedCms.statusCode, res.markedCms.reasonPhrase, res.markedCms.headers);
+//        res.markedCms.originalEnd.call(res, res.markedCms.string);
+        res.writeHead = res.markedCms.originalWriteHead;
+        res.write = res.markedCms.originalWrite;
+        res.end = res.markedCms.originalEnd;
+        callback(req, res, next);
     };
     return res;
 };

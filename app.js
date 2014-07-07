@@ -19,16 +19,25 @@ var ResourceResolver = require('./middleware/resourceResolver');
 var rewrite = require('./middleware/requestRewriter');
 var RendererResolver = require('./middleware/RendererResolver');
 var pageRenderer = require('./renderers/pageRenderer');
-var errorRenderer = require('./renderers/errorRenderer');
+//var errorRenderer = require('./renderers/errorRenderer');
+var pageCompiler = require("./routes/pageCompiler");
 require("./util/polyfills");
 var siteRootPath = process.env["filePersistence.rootDir"];
 var responseProxy = require('./util/responseProxy');
+var jsDAV_Util = require("jsdav/lib/shared/util");
 
 // New Code
 var mongo = require('mongodb');
 var monk = require('monk');
 //var db = monk('localhost:27017/nodetest1');
 
+var compilers = {
+    "X-mdcms/page": pageCompiler
+};
+
+var renderers = {
+    "X-mdcms/page": pageRenderer
+};
 var app = express();
 
 
@@ -51,43 +60,92 @@ jsDAV.createServer({
 */
 
 // From https://gist.github.com/touv/11045459
-app.use(function(req, res, next) {
-    if (req.url.search(/^\/.*\/$/) >= 0) {
-        req.url = req.url + "index.page.json";
-        req.headers["X-MarkedCMS-Render"] = "true";
-    }
-    next();
+var jsDavService = jsDAV.mount({
+    node:           path.join(siteRootPath),
+    mount:          "/",
+    server:         app,
+    standalone:     false,
+    "locksBackend": locksBackend,
+    plugins: jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
+            "bufferResource": require("./jsdav-plugin/BufferResourcePlugin")
+    })
 });
+app.use("/public", express.static(__dirname + "/public"));
+app.all("*",
+        function(req, res, next) {
+            req["markedCms"] = {};
+            req["markedCms"].siteRootPath = "/Users/vramdal/temp/markedcms-content";
+            req["markedCms"].templatePath = "templates";
+            return next();
+        },
+        function(req, res, next) {
+            if (req.url.search(/^\/.*\/$/) >= 0) {
+                req.url = req.url + "index.page.json";
+                req["markedCms"].bufferResource = true;
+                req["markedCms"].render = true;
+            }
+            if (req.headers["X-MarkedCms-BufferResource"]) {
+                req["markedCms"].bufferResource = true;
+            }
+            if (req.headers["X-MarkedCms-Render"]) {
+                req["markedCms"].render = true;
+            }
+            return next();
+        },
+        function(req, res, next) {
+            req["markedCms"]["next"] = next;
+            jsDavService.exec(req, res);
+        },
+        function(req, res, next) {
+//            console.log("Her skal vi rendre resultatet: ", req["markedCms"].resource);
+            console.log("Type: " + req["markedCms"].resource.getMimeType());
+            var resource = req["markedCms"].resource;
+            if (resource) {
+                var compiler = compilers[resource.getMimeType()];
+                if (compiler) {
+                    return compiler(req, res, next);
+                }
+            }
+            next();
+//            res.json("OK");
+//            res.end();
+        },
+        function(req, res, next) {
+            console.log("Ferdig kompilert: ", req["markedCms"].resource.compiled);
+            if (req["markedCms"].render) {
+                var resource = req["markedCms"].resource;
+                var renderer = renderers[resource.getMimeType()];
+                if (renderer) {
+                    return renderer(req, res, next);
+                }
+
+            }
+            next();
+        }
+);
+/*
 app.use(function(req, res, next) {
     if (req.headers["X-MarkedCMS-Render"]) {
-        if (req.headers["if-modified-since"]) {
-            delete req.headers["if-modified-since"];
-        }
-        if (req.headers["if-none-match"]) {
-            delete req.headers["if-none-match"];
-        }
         console.log("Page: " + req.url);
-        responseProxy.makeProxy(res);
-        next();
+        pageCompiler.render(req, res, next);
+//        pageRenderer.renderProxiedResponse(req, res, next);
+//        responseProxy.makeProxy(req, res, next, pageRenderer.renderProxiedResponse);
+//        next();
     } else {
         next();
     }
 });
+*/
+/*
 app.use(function (req, res, next) {
 //	if (req.url.search(/^\/webdav/) >= 0) {
-    var jsDavService = jsDAV.mount({
-        node:           path.join(siteRootPath),
-        mount:          "/",
-        server:         req.app,
-        standalone:     false,
-        "locksBackend": locksBackend
-    });
     jsDavService.exec(req, res);
 //    next();
 //	} else {
 //		next();
 //	}
 });
+*/
 
 
 // all environments
@@ -118,16 +176,16 @@ app.post("/assets", assetsRoute.upload(persistence));
 //app.get(/^\/assets\/(.*?)\/(\d*)x(\d*)$/, image.imageResize(persistence));
 //app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(persistence));
 app.use("/assets", express.static(__dirname + "/../assets"));
-app.use("/public", express.static(__dirname + "/public"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
 
-var resourceResolver = new ResourceResolver([persistence]);
+//var resourceResolver = new ResourceResolver([persistence]);
 
-var requestRendererResolver = new RendererResolver();
-requestRendererResolver.registerRenderer("markedcms/page", pageRenderer(resourceResolver));
-requestRendererResolver.registerRenderer("error/404", errorRenderer());
+//var requestRendererResolver = new RendererResolver();
+//requestRendererResolver.registerRenderer("markedcms/page", pageRenderer(resourceResolver));
+//requestRendererResolver.registerRenderer("error/404", errorRenderer());
 
 
+/*
 app.get(/^\/test\/.+$/,
 		rewrite.path(/^\/test\/(.*)/, "/content/$1"),
 		rewrite.lastPart(/(.+)/, "$1.page.json"),
@@ -139,9 +197,10 @@ app.post(/^\/test\/.+$/,
 		resourceResolver.resolveRequest(siteRootPath)
 );
 
+*/
 app.get(/^\/static\/.+$/, rawRoute.getStaticFile(persistence));
 /*
-app.get(/^\/(?!assets\/)(?!public\/)(?!(.*?\..+)$)(.+)$/, pageRoute.viewContent(persistence));
+app.get(/^\/(?!assets\/)(?!public\/)(?!(.*?\..+)$)(.+)$/, pageCompiler.viewContent(persistence));
 app.get(/^\/(?!assets\/)(?!public\/)(?!static\/).*?\..+$/,
         serveContentNegotiator.negotiator({
             "text/html": markdownRoute.preview(persistence)

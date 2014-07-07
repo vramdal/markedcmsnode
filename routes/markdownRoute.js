@@ -2,6 +2,10 @@ var md = require('marked');
 var pathTool = require('path');
 var jade = require('jade');
 
+exports.render = function(req, res, next) {
+//    res.render("includes/content", )
+};
+
 exports.preview = function (persistence) {
 	return function (req, res, next) {
 
