@@ -1,6 +1,6 @@
 doctype html
-mixin block(contentBlock)
-  div(id='x_'+(contentBlock.id), class='mdcms-content', mdcms-content-id=''+(contentBlock.id))
+mixin block(contentBlock, classes)
+  div(id='x_'+(contentBlock.id), class='mdcms-content'+(classes?" "+classes:""), mdcms-content-id=''+(contentBlock.id))
     include includes/content
 html
   head

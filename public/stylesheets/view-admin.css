@@ -1,11 +1,15 @@
 .mdcms-content {
-    outline: 2px solid lightblue;
-    outline-offset: 0.5em;
+    transition-property: background-color, box-shadow;
+    transition-duration: .5s;
 }
 
-.mdcms-content:not(.unfocused):hover {
-    background-color: lightblue !important;
+.mdcms-content:not(.unfocused):not(.editing):hover {
+    box-shadow: 0px 0px 10pt 10pt lightyellow;
+    background-color: lightyellow;
+    /*background-color: lightblue !important;*/
     cursor: url("../images/pencil-icon.png") 0 31, pointer;
+    transition-property: background-color, box-shadow;
+    transition-duration: .5s;
 }
 
 .edit-frame {
@@ -14,8 +18,12 @@
 
 .mdcms-content.unfocused {
     opacity: .3;
+    transition-property: opacity;
+    transition-duration: 1s;
 }
 
 .mdcms-content.editing {
-
+    box-shadow: 0px 0px 10pt 10pt #808080;
+    transition-property: box-shadow;
+    transition-duration: .5s;
 }

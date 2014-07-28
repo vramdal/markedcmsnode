@@ -1,5 +1,6 @@
 var adminBootstrap = {
     editableElements: [],
+    isEditingSomething: false,
     start: function() {
         var head = document.querySelector("html > head");
         try {
@@ -21,9 +22,9 @@ var adminBootstrap = {
 			if (!evt.currentTarget["mdcms"]) {
 				return;
 			}
-			if (evt.currentTarget.mdcms.isEditing()) {
+            if (evt.currentTarget.mdcms.isEditing()) {
 				evt.currentTarget.mdcms.closeEditor();
-			} else {
+			} else if (!adminBootstrap.isEditingSomething) {
 				evt.currentTarget.mdcms.startEditor();
 			}
 		}, true);
@@ -42,6 +43,7 @@ var adminBootstrap = {
                 if (this.isEditing()) {
                     return false;
                 }
+                adminBootstrap.isEditingSomething = true;
                 this.webDavClient = new WebDavClient();
                 this.webDavClient.url = editableElement.getAttribute("mdcms-content-id");
                 _this.editableElements.forEach(function(editableElement) {
@@ -52,7 +54,7 @@ var adminBootstrap = {
                     }
                 }, this);
                 var elementPosition = editableElement.getBoundingClientRect();
-                editableElement.style.boxShadow = "0 0 5px 5px yellow";
+//                editableElement.style.boxShadow = "0 0 5px 5px yellow";
 //				window.addEventListener("message", this.receiveRefreshMessage.bind(this), false);
 //                var editFrame = document.createElement("iframe");
                 var editFrame = document.createElement("mdcms-markdown-editor");
@@ -74,6 +76,7 @@ var adminBootstrap = {
                 this.editFrame = editFrame;
             },
             closeEditor: function () {
+                adminBootstrap.isEditingSomething = false;
                 if (!this.isEditing()) {
                     return false;
                 }
@@ -81,7 +84,7 @@ var adminBootstrap = {
                     editableElement.classList.remove("unfocused");
                     editableElement.classList.remove("editing");
                 }, this);
-                editableElement.style.boxShadow = "";
+//                editableElement.style.boxShadow = "";
                 document.body.removeChild(this.editFrame);
                 this.editFrame.removeEventListener("refresh-preview", this.receiveRefreshMessage, false);
                 window.document.title = window.document.title + "...";
