@@ -3,11 +3,19 @@
     outline-offset: 0.5em;
 }
 
-.mdcms-content:hover {
+.mdcms-content:not(.unfocused):hover {
     background-color: lightblue !important;
     cursor: url("../images/pencil-icon.png") 0 31, pointer;
 }
 
 .edit-frame {
     /*position: absolute;*/
+}
+
+.mdcms-content.unfocused {
+    opacity: .3;
+}
+
+.mdcms-content.editing {
+
 }

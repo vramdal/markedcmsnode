@@ -1,4 +1,5 @@
 var adminBootstrap = {
+    editableElements: [],
     start: function() {
         var head = document.querySelector("html > head");
         try {
@@ -40,6 +41,13 @@ var adminBootstrap = {
                 if (this.isEditing()) {
                     return false;
                 }
+                _this.editableElements.forEach(function(editableElement) {
+                    if (editableElement != this.element) {
+                        editableElement.classList.add("unfocused");
+                    } else {
+                        editableElement.classList.add("editing");
+                    }
+                }, this);
                 var elementPosition = editableElement.getBoundingClientRect();
                 editableElement.style.boxShadow = "0 0 5px 5px yellow";
 //				window.addEventListener("message", this.receiveRefreshMessage.bind(this), false);
@@ -66,6 +74,10 @@ var adminBootstrap = {
                 if (!this.isEditing()) {
                     return false;
                 }
+                adminBootstrap.editableElements.forEach(function(editableElement) {
+                    editableElement.classList.remove("unfocused");
+                    editableElement.classList.remove("editing");
+                }, this);
                 editableElement.style.boxShadow = "";
                 document.body.removeChild(this.editFrame);
                 this.editFrame.removeEventListener("refresh-preview", this.receiveRefreshMessage, false);
@@ -105,6 +117,7 @@ var adminBootstrap = {
             var editableElement = editableElements[i];
             if (!editableElement["mdcms"]) {
                 this.setupEditableElement(editableElement);
+                this.editableElements.push(editableElement);
             }
         }
     }
