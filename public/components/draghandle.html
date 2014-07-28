@@ -4,16 +4,25 @@
     <script>
         Polymer('mdcms-draghandle', {
             draggableId: undefined,
+            publish: {
+                  dragTarget: undefined
+            },
+            dragTargetChanged: function() {
+                console.log("Drag target changed");
+            },
             domReady: function() {
+                var _this = this;
+                console.log("Drag handle ready");
                 var thisShadowRoot = this.shadowRoot;
                 var parentFragment = thisShadowRoot.getParentFragment();
-                var dragTarget;
-                if (this.draggableId == ":host") {
-                    dragTarget = parentFragment.host;
-                } else if (this.draggableId) {
-                    dragTarget = parentFragment.getElementById(this.draggableId);
-                } else {
-                    dragTarget = this.shadowRoot.host.parentElementAcrossDocumentFragments();
+                if (this.dragTarget == undefined) {
+                    if (this.draggableId == ":host") {
+                        this.dragTarget = parentFragment.host;
+                    } else if (this.draggableId) {
+                        this.dragTarget = parentFragment.getElementById(this.draggableId);
+                    } else {
+                        this.dragTarget = this.shadowRoot.host.parentElementAcrossDocumentFragments();
+                    }
                 }
                 var dragHandle = this.$["draghandle"];
                 dragHandle.addEventListener("mousedown", function(evt) {
@@ -24,9 +33,9 @@
                         left: evt.clientX,
                         top: evt.clientY
                     };
-                    dragTarget.style.position = "fixed";
-                    var targetRect = dragTarget.getBoundingClientRect();
-                    var targetStartPos = dragTarget.absolutePosition(null, false);
+                    _this.dragTarget.style.position = "fixed";
+                    var targetRect = _this.dragTarget.getBoundingClientRect();
+                    var targetStartPos = _this.dragTarget.absolutePosition(null, false);
                     var mouseMoveListener = function (evt) {
                         if (!dragHandle.isDragging) {
                             return true;
@@ -42,10 +51,10 @@
                             left: (targetStartPos.left + hasMoved.left),
                             top:  (targetStartPos.top + hasMoved.top)
                         };
-                        dragTarget.style.position = "absolute";
-                        dragTarget.style.left = newPosition.left + "px";
-                        dragTarget.style.top = newPosition.top + "px";
-                        dragTarget.style.opacity = '0.4';
+                        _this.dragTarget.style.position = "absolute";
+                        _this.dragTarget.style.left = newPosition.left + "px";
+                        _this.dragTarget.style.top = newPosition.top + "px";
+                        _this.dragTarget.style.opacity = '0.4';
     
                     };
                     var endDragListener = function (evt) {
@@ -58,7 +67,7 @@
                         if (dragHandle.isMoving) {
                             delete dragHandle.isMoving;
                         }
-                        dragTarget.style.opacity = '';
+                        _this.dragTarget.style.opacity = '';
                         dragHandle.style.cursor = "";
                     };
                     document.addEventListener("mouseup", endDragListener);

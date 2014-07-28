@@ -16,6 +16,19 @@
     /*position: absolute;*/
 }
 
+mdcms-markdown-editor {
+    position: fixed;
+    left: 50%;
+    top: 30%;
+    height: auto;
+    width: auto;
+    display: block;
+}
+
+mdcms-toolwindow {
+    display: block;
+}
+
 .mdcms-content.unfocused {
     opacity: .3;
     transition-property: opacity;
@@ -23,7 +36,7 @@
 }
 
 .mdcms-content.editing {
-    box-shadow: 0px 0px 10pt 10pt #808080;
+    box-shadow: inset 0 0 10pt 3pt lightyellow;
     transition-property: box-shadow;
     transition-duration: .5s;
 }

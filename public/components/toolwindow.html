@@ -16,6 +16,9 @@
                     this.shadowRoot.querySelector("#closeButton").addEventListener("click", function () {
                         self.close();
                     });
+                    // Todo: Not good
+                    this.$["dragHandle"].dragTarget = this.shadowRoot.host.getOwnerDocumentFragment().host;
+
                 },
                 close: function () {
                     this.fire("close");
@@ -29,8 +32,8 @@
                 border: 1px outset;
                 min-width: 10ex;
                 position: fixed;
-                top: 50px;
-                left: 50%;
+                /*top: 50px;*/
+                /*left: 50%;*/
                 width: auto;
                 box-shadow: 0 0 5px 5px gray;
             }
@@ -64,7 +67,7 @@
             }
         </style>
         <div class="title-wrapper">
-            <mdcms-draghandle draggableId=":host">{{title}}</mdcms-draghandle>
+            <mdcms-draghandle id="dragHandle">{{title}}</mdcms-draghandle>
             <div class="buttons">
                 <mdcms-button id="closeButton"></mdcms-button>
             </div>
