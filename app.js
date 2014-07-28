@@ -27,6 +27,7 @@ require("./util/polyfills");
 var siteRootPath = process.env["filePersistence.rootDir"];
 var responseProxy = require('./util/responseProxy');
 var jsDAV_Util = require("jsdav/lib/shared/util");
+var fs = require("fs");
 
 // New Code
 var mongo = require('mongodb');
@@ -88,10 +89,10 @@ app.all("*",
                 req["markedCms"].bufferResource = true;
                 req["markedCms"].render = true;
             }
-            if (req.headers["x-markedcms-bufferresource"]) {
+            if (req.headers["x-markedcms-bufferresource"] && req.headers["x-markedcms-bufferresource"] != "false") {
                 req["markedCms"].bufferResource = true;
             }
-            if (req.headers["x-markedcms-render"]) {
+            if (req.headers["x-markedcms-render"] && req.headers["x-markedcms-render"] != "false") {
                 req["markedCms"].render = true;
             }
             return next();

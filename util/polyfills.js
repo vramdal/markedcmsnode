@@ -74,3 +74,37 @@ if (!String.prototype.substringAfter) {
 		return this.substring(pos + needle.length);
 	}
 }
+
+/*
+if (!jade.Parser.prototype.originalParseExtends) {
+    jade.Parser.prototype.originalParseExtends = jade.Parser.prototype["parseExtends"];
+    jade.Parser.prototype.parseExtends = function() {
+        var path = this.peek('extends').val.trim();
+        if (path.startsWith("dav://")) {
+
+            if ('.jade' != path.substr(-5)) path += '.jade';
+            var self = this;
+            var str = resourceFetcher({
+                "path": pathTool.join("templates", path.substringAfter("dav://")),
+                headers: {
+                    "X-MarkedCms-BufferResource": "true",
+                    "X-MarkedCms-Render": "false"
+                }
+            });
+            console.log("Extender: " + str);
+            var parser = new this.constructor(str, path, this.options);
+
+            parser.blocks = this.blocks;
+            parser.contexts = this.contexts;
+            self.extending = parser;
+
+
+
+            // TODO: null node
+            return new nodes.Literal('');
+        } else {
+            return this.originalParseExtends();
+        }
+    };
+}
+*/

@@ -1,0 +1,32 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<polymer-element name="mdcms-button" attributes="src, title">
+    <script>
+        Polymer('mdcms-button', {
+            "img-src": undefined
+        });
+    </script>
+    <template>
+        <style>
+            :host {
+                cursor: default;
+            }
+        </style>
+        <template if="{{src == undefined}}">
+            <style>
+                :host(:hover) {
+                    /*box-shadow: 0 0 5px 5px gray;*/
+                    box-shadow: inset 2px 2px 2px 2px gray;
+                }
+            </style>
+            <content></content>
+        </template>
+        <template if="{{src != undefined}}">
+            <style>
+                img {
+                    border: none;
+                }
+            </style>
+            <img src="{{src}}" title="{{title}}"/>
+        </template>
+    </template>
+</polymer-element>

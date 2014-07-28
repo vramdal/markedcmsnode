@@ -1,4 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="toolwindow.html">
 <!--<link rel="import" href="../bower_components/core-ajax/core-ajax.html">-->
 
 <polymer-element name="mdcms-markdown-editor" attributes="mdCmsContentId">
@@ -25,22 +26,24 @@
         };
 
         function dropIntercept(event) {
-            alert("Dropped");
-            var overlay = polymerThis.$["drag-upload-overlay"];
-            overlay.style.display = "none";
-
-            event.preventDefault();
-            event.cancelBubble = true;
-            console.log("Dropping", event);
-            console.log("Caret position: " + polymerThis.$["wmd-input"].selectionStart);
+//            alert("Dropped");
             var dt = event.getDataTransfer();
             console.log("DataTransfer types:", dt.types, "files: ", dt.files.length);
             if (dt.items.length == 1) {
+                var overlay = polymerThis.$["drag-upload-overlay"];
+                overlay.style.display = "none";
+
+                event.preventDefault();
+                event.cancelBubble = true;
+                console.log("Dropping", event);
+                console.log("Caret position: " + polymerThis.$["wmd-input"].selectionStart);
                 var item = dt.items[0];
                 console.log("Kind: ", item.kind);
                 var file = item.getAsFile();
                 window.droppedFile = file;
                 console.log("File: ", file);
+            } else {
+                return;
             }
             // Fra http://html5demos.com/dnd-upload
             var reader = new FileReader();
@@ -163,9 +166,9 @@
             var panel = polymerThis.$["wmd-panel"];
             var dragUploadOverlay = polymerThis.$["drag-upload-overlay"];
             var imageUploadOverlay = polymerThis.$["image-upload-overlay"];
+
             panel.addEventListener("drop", dropIntercept);
             panel.addEventListener("dragover", cancelEvent);
-            dragUploadOverlay.addEventListener("dragleave", dragLeaveIntercept, false);
             editor.hooks.set("insertImageDialog", function (callback) {
                 if (window.droppedImg) {
                     hideOverlay(dragUploadOverlay);
@@ -235,6 +238,15 @@
       <style>
 
           /*noinspection CssUnusedSymbol*/
+          #wmd-panel {
+              /*width: 80ex;*/
+          }
+
+          #wmd-input {
+              width: 100%;
+              box-sizing: border-box;
+              /*resize: none;*/
+          }
           .wmd-button-row {
               list-style-type: none;
               width: 100%;
@@ -292,21 +304,34 @@
               -webkit-box-pack: center;
               -webkit-box-align: center;
           }
+/*
+          mdcms-draghandle {
+              background-color: black;
+              color: white;
+              font-weight: bold;
+              width: 100%;
+              display: block;
+              box-sizing: border-box;
+          }
+*/
 
       </style>
-      <div class="wmd-panel" id="wmd-panel">
-          <div id="image-upload-overlay">
+      <mdcms-toolwindow title="Markdown Editor" resize="none">
+          <div class="wmd-panel" id="wmd-panel">
+              <div id="image-upload-overlay">
 
+              </div>
+              <div id="drag-upload-overlay">
+                  Drop here to upload
+              </div>
+              <div id="wmd-button-bar" style="">
+              </div>
+              <textarea id="wmd-input" rows="10" cols="40">![Laks meg her og der][1]
+
+
+                  [1]: https://www.google.com/images/srpr/logo11w.png</textarea>
+              <div id="wmd-preview"></div>
           </div>
-          <div id="drag-upload-overlay">
-              Drop here to upload
-          </div>
-          <div id="wmd-button-bar" style=""></div>
-          <textarea id="wmd-input" rows="30" cols="80">![Laks meg her og der][1]
-
-
-        [1]: https://www.google.com/images/srpr/logo11w.png</textarea>
-          <div id="wmd-preview"></div>
-      </div>
+      </mdcms-toolwindow>
   </template>
 </polymer-element>

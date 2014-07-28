@@ -1,0 +1,13 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../draghandle.html">
+<polymer-element name="test-draggable">
+    <script>
+        Polymer("test-draggable", {});
+    </script>
+    <template>Torsk
+        <div id="dragTarget" style="background-color: red; width: 100px; height: 50px;
+        position: absolute; left: 150px; top: 100px">
+            <mdcms-draghandle draggableId="dragTarget"/>
+        </div>
+    </template>
+</polymer-element>

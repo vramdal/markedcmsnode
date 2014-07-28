@@ -1,0 +1,67 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="draghandle.html">
+<link rel="import" href="button.html">
+<!--<link rel="import" href="../bower_components/core-ajax/core-ajax.html">-->
+
+<polymer-element name="mdcms-toolwindow" attributes="title resize">
+    <script>
+        Polymer("mdcms-toolwindow", {
+            domReady: function() {
+                if (this.resize == undefined) {
+                    this.resize = "both";
+                }
+                this.shadowRoot.querySelector(".content-wrapper").style.resize = this.resize;
+            }
+        });
+    </script>
+    <template bind="title">
+        <style>
+            :host {
+                border: 1px outset;
+                min-width: 10ex;
+                position: fixed;
+                top: 50px;
+                left: 50%;
+                width: auto;
+                box-shadow: 0 0 5px 5px gray;
+            }
+            .content-wrapper {
+                background-color: lightgrey;
+                padding: 5px;
+                overflow: auto;
+            }
+            .title-wrapper {
+                display: flex;
+                flex: auto 1;
+                /*flex-direction: row;*/
+                flex-wrap: nowrap;
+                flex-flow: row;
+                justify-content: space-between;
+                background-color: black;
+                color: white;
+            }
+            mdcms-draghandle {
+                /*font-weight: bold;*/
+                padding: 1px;
+                font-family: "Gill Sans", sans-serif;
+                align-self: flex-start;
+                width: 100%;
+            }
+            .buttons {
+                align-self: flex-end;
+            }
+            mdcms-button {
+                font-family: Webdings;
+            }
+        </style>
+        <div class="title-wrapper">
+            <mdcms-draghandle draggableId=":host">{{title}}</mdcms-draghandle>
+            <div class="buttons">
+                <mdcms-button></mdcms-button>
+            </div>
+        </div>
+        <div class="content-wrapper">
+            <content></content>
+        </div>
+    </template>
+</polymer-element>

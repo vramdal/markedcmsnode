@@ -14,6 +14,71 @@ window.Element && function(ElementPrototype) {
 	}
 }(Element.prototype);
 
+window.DocumentFragment && function(DocumentFragmentPrototype) {
+    DocumentFragmentPrototype.getParentFragment = function() {
+        if (!this.host) {
+            return null;
+        }
+        var hostDocument = this.host;
+        while (hostDocument.parentNode != null) {
+            hostDocument = hostDocument.parentNode;
+        }
+        return hostDocument;
+    }
+}(DocumentFragment.prototype);
+
+window.Element && function(ElementPrototype) {
+    ElementPrototype.getOwnerDocumentFragment = function() {
+        var fragmentRoot = this;
+        while (fragmentRoot != null && !(fragmentRoot instanceof DocumentFragment) && !(fragmentRoot instanceof Document)) {
+            fragmentRoot = fragmentRoot.parentNode;
+        }
+        return fragmentRoot;
+    }
+}(Element.prototype);
+
+window.Element && function(ElementPrototype) {
+    ElementPrototype.absolutePosition = function(relativeToNode, crossDocumentBoundaries) {
+        var parent = this.parentNode;
+        if (!crossDocumentBoundaries) {
+            while (parent != null
+                    && parent != this.offsetParent
+                    && !(parent instanceof DocumentFragment || parent instanceof Document)
+                    && parent != relativeToNode)
+            {
+                parent = parent.parentNode;
+            }
+            if (parent instanceof DocumentFragment || parent instanceof Document) {
+                parent = null;
+            }
+        } else {
+            parent = this.offsetParent;
+        }
+        var parentPosition = (parent && this !== relativeToNode
+                ? parent.absolutePosition(relativeToNode, crossDocumentBoundaries)
+                : {left: 0, top: 0}
+                );
+        return {
+            left: this.offsetLeft + parentPosition.left,
+            top: this.offsetTop + parentPosition.top
+        }
+    };
+}(Element.prototype);
+
+window.Node && function(NodePrototype) {
+    NodePrototype.parentElementAcrossDocumentFragments = function() {
+        if (this.parentElement) {
+            return this.parentElement;
+        } else if (this.parentNode) {
+            return this.parentNode.parentElementAcrossDocumentFragments();
+        } else if (this.host) {
+            return this.host;
+        } else {
+            return null;
+        }
+    }
+}(Node.prototype);
+
 Window && function(WindowPrototype) {
 	WindowPrototype.getParameterValue = function(key) {
 		if (!this["_parameters"]) {

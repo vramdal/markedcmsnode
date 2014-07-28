@@ -49,10 +49,10 @@ var adminBootstrap = {
                 editFrame.setAttribute("frameborder", "0");
                 editFrame.setAttribute("mdCmsContentId", this.mdCmsContentId);
 				editFrame.setAttribute("src", "/editor-demo.html?mdcms-content-id=" + this.mdCmsContentId);
-                editFrame.style.width = Math.max(500, elementPosition.width) + "px";
-                editFrame.style.height = Math.max(200, elementPosition.height) + "px";
-                editFrame.style.top = elementPosition.bottom + "px";
-                editFrame.style.left = elementPosition.left + "px";
+//                editFrame.style.width = Math.max(500, elementPosition.width) + "px";
+//                editFrame.style.height = Math.max(200, elementPosition.height) + "px";
+//                editFrame.style.top = elementPosition.bottom + "px";
+//                editFrame.style.left = elementPosition.left + "px";
                 document.body.appendChild(editFrame);
                 editFrame.focus();
                 this.editFrame = editFrame;
