@@ -41,6 +41,7 @@ var adminBootstrap = {
                     return false;
                 }
                 var elementPosition = editableElement.getBoundingClientRect();
+                editableElement.style.boxShadow = "0 0 5px 5px yellow";
 //				window.addEventListener("message", this.receiveRefreshMessage.bind(this), false);
 //                var editFrame = document.createElement("iframe");
                 var editFrame = document.createElement("mdcms-markdown-editor");
@@ -49,6 +50,10 @@ var adminBootstrap = {
                 editFrame.setAttribute("frameborder", "0");
                 editFrame.setAttribute("mdCmsContentId", this.mdCmsContentId);
 				editFrame.setAttribute("src", "/editor-demo.html?mdcms-content-id=" + this.mdCmsContentId);
+                var self = this;
+                editFrame.addEventListener("close", function() {
+                    self.closeEditor();
+                });
 //                editFrame.style.width = Math.max(500, elementPosition.width) + "px";
 //                editFrame.style.height = Math.max(200, elementPosition.height) + "px";
 //                editFrame.style.top = elementPosition.bottom + "px";
@@ -61,6 +66,7 @@ var adminBootstrap = {
                 if (!this.isEditing()) {
                     return false;
                 }
+                editableElement.style.boxShadow = "";
                 document.body.removeChild(this.editFrame);
                 this.editFrame.removeEventListener("refresh-preview", this.receiveRefreshMessage, false);
                 window.document.title = window.document.title + "...";

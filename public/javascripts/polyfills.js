@@ -179,7 +179,7 @@ function HtmlFetch(url, targetEl, errorCallback) {
 	});
 	xhr.open("GET", url);
 	xhr.setRequestHeader("Accept", "text/html");
-    xhr.setRequestHeader("Insist-Content-Type", "text/html");
+    xhr.setRequestHeader("x-markedcms-render", "true");
 	xhr.send();
 }
 

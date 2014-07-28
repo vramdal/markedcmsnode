@@ -93,6 +93,7 @@ app.all("*",
                 req["markedCms"].bufferResource = true;
             }
             if (req.headers["x-markedcms-render"] && req.headers["x-markedcms-render"] != "false") {
+                req["markedCms"].bufferResource = true;
                 req["markedCms"].render = true;
             }
             return next();
