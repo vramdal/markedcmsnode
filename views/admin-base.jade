@@ -1,6 +1,7 @@
 doctype html
 mixin block(contentBlock)
-  include includes/content
+  div(id='x_'+(contentBlock.id), class='mdcms-content', mdcms-content-id=''+(contentBlock.id))
+    include includes/content
 html
   head
     title= title
