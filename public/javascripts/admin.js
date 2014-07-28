@@ -37,10 +37,13 @@ var adminBootstrap = {
                             // TODO
                         });
             },
+            webDavClient: undefined,
 			startEditor: function () {
                 if (this.isEditing()) {
                     return false;
                 }
+                this.webDavClient = new WebDavClient();
+                this.webDavClient.url = editableElement.getAttribute("mdcms-content-id");
                 _this.editableElements.forEach(function(editableElement) {
                     if (editableElement != this.element) {
                         editableElement.classList.add("unfocused");
@@ -84,6 +87,12 @@ var adminBootstrap = {
                 window.document.title = window.document.title + "...";
                 var _this = this;
                 var url = this.mdCmsContentId;
+                this.webDavClient.PUT(this.editFrame.value,
+                        function(text, fetcher, evt) {
+                            window.document.title = window.document.title.substring(0, window.document.title.length - 3);
+                            _this.refreshFromServer();
+                        });
+/*
                 new FormPost(url, this.editFrame.value,
                         function(text, fetcher, evt) {
                             window.document.title = window.document.title.substring(0, window.document.title.length - 3);
@@ -94,6 +103,7 @@ var adminBootstrap = {
                             window.document.title = window.document.title.substring(0, window.document.title.length - 3);
                             console.error("Feil ved lagring", response, fetcher, evt);
                 });
+*/
                 this.editFrame = undefined;
                 window.removeEventListener("message", this.receiveRefreshMessage, false);
 			},

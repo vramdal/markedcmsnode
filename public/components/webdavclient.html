@@ -1,0 +1,40 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="toolwindow.html">
+<!--<link rel="import" href="../bower_components/core-ajax/core-ajax.html">-->
+
+<polymer-element name="mdcms-webdav-client" constructor="WebDavClient">
+    <script type="text/javascript" src="../javascripts/polyfills.js"></script>
+    <script type="text/javascript" src="../lib/webdavjs/webdav.js"></script>
+
+    <script>
+        Polymer("mdcms-webdav-client", {
+            _url: undefined,
+            get url() {
+                return this._url;
+            },
+            set url(url) {
+                this._url = url;
+            },
+            GET: function(callback) {
+              return WebDAV.request('GET', this._url, {}, null, 'text', callback);
+            },
+
+            PROPFIND: function(callback) {
+              return WebDAV.request('PROPFIND', this._url, {Depth: "1"}, null, 'xml', callback);
+            },
+
+            MKCOL: function(callback) {
+              return WebDAV.request('MKCOL', this._url, {}, null, 'text', callback);
+            },
+
+            DELETE: function(callback) {
+              return WebDAV.request('DELETE', this._url, {}, null, 'text', callback);
+            },
+
+            PUT: function(data, callback) {
+              return WebDAV.request('PUT', this._url, {}, data, 'text', callback);
+            }
+        });
+    </script>
+
+</polymer-element>
