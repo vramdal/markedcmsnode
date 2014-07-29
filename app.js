@@ -28,6 +28,9 @@ var siteRootPath = process.env["filePersistence.rootDir"];
 var responseProxy = require('./util/responseProxy');
 var jsDAV_Util = require("jsdav/lib/shared/util");
 var fs = require("fs");
+var passport = require('passport');
+var GoogleStrategy = require('passport-google').Strategy;
+
 
 // New Code
 var mongo = require('mongodb');
@@ -76,6 +79,49 @@ var jsDavService = jsDAV.mount({
     })
 });
 app.use("/public", express.static(__dirname + "/public"));
+
+passport.use(new GoogleStrategy({
+            returnURL: "http://localhost:8080/auth/google/return",
+            realm: "http://localhost:8080"
+        },
+        function(identifier, profile, done) {
+            console.log("Google", identifier);
+            done(null, profile);
+        }
+));
+passport.serializeUser(function(user, done) {
+  done(null, user.emails[0].value);
+});
+
+passport.deserializeUser(function(id, done) {
+    done(null, {email: id, name: "Vidar"});
+/*
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+*/
+});
+app.configure(function() {
+    app.use(express.cookieParser('your secret here'));
+    app.use(express.session({ secret: 'keyboard rabbit' }));
+    app.use(passport.initialize());
+    app.use(passport.session());
+});
+
+app.get('/auth/google', function(req, res, next) {
+    req.session.goAfterLogin = req.headers["referer"];
+    next();
+});
+app.get('/auth/google', passport.authenticate('google'));
+app.get('/auth/google/return',
+        passport.authenticate('google'),
+        function(req, res) {
+            res.redirect(req.session.goAfterLogin ? req.session.goAfterLogin : "/");
+        });
+app.get("/auth/logout", function(req, res, next) {
+    req.logout();
+    res.redirect(req.headers["referer"] ? req.headers["referer"] : "/");
+});
 app.all("*",
         function(req, res, next) {
             req["markedCms"] = {};
@@ -150,8 +196,6 @@ app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
-app.use(express.cookieParser('your secret here'));
-app.use(express.session());
 app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 

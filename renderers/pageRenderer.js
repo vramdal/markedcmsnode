@@ -15,8 +15,12 @@ module.exports = function(req, res, next) {
         }
         var contentPath = resource.compiled.templateContent[prop]["path"];
         var contentStr = resource.compiled.templateContent[prop]["content"];
-        htmlContents[prop] = {"id": contentPath, "html": contentStr};
+        htmlContents[prop] = {
+            "id": contentPath,
+            "html": contentStr
+        };
     }
+    htmlContents["user"] = req.user;
     var templateFn = jade.compile(jadeStr, {
                 'filename': pathTool.join(siteRootPath, templatePath),
                 'pretty': true,

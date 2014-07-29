@@ -1,0 +1,29 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<polymer-element name="mdcms-admin-bar" attributes="userName userEmail">
+    <script>
+        Polymer('mdcms-admin-bar', {});
+    </script>
+    <template>
+        <style>
+            :host {
+                position: fixed;
+                border-bottom: outset;
+                top: 0;
+                left: 0;
+                right: 0;
+                padding: 3px;
+                font-size: 9pt;
+                background-color: #ccffcc;
+                color: #000000;
+                display: flex;
+                flex: auto 1;
+                /*flex-direction: row;*/
+                flex-wrap: nowrap;
+                flex-flow: row;
+                justify-content: space-between;
+            }
+        </style>
+        Logged in as {{userName}} ({{userEmail}})
+        <a href="/auth/logout">Log out</a>
+    </template>
+</polymer-element>

@@ -11,9 +11,15 @@ html
     script(type='text/javascript', src='/public/javascripts/admin.js')
     link(rel='import', href="/public/components/webdavclient.html")
     link(rel='import', href="/public/components/markdown-editor.html")
+    link(rel='import', href="/public/components/admin-bar.html")
     meta(charset='utf-8')
     block head
   body
+      if user
+        mdcms-admin-bar(userName='#{user.name}', userEmail='#{user.email}', logoutUrl='/auth/logout')
       block body
         //each contentBlock in contentBlocks
         //  +block(contentBlock.id, contentBlock.content)
+      if !user
+        div#login-bar
+          a(href='/auth/google') Login (Google)

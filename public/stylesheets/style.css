@@ -6,3 +6,9 @@ body {
 a {
   color: #00B7FF;
 }
+
+#login-bar {
+    clear: both;
+    float: left;
+    font-size: 9pt;
+}
