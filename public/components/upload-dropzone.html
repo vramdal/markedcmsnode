@@ -1,0 +1,146 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<polymer-element name="mdcms-upload-dropzone" attributes="content-type">
+    <script type="text/javascript" src="../javascripts/polyfills.js"></script>
+    <script>
+        (function () {
+            Polymer('mdcms-upload-dropzone', {
+                "content-type": undefined,
+                dragOverlay: undefined,
+                domReady: function() {
+                    this.dragOverlay = this.$["drag-upload-overlay"];
+                    this.hostParent = this.shadowRoot.host.parentElementAcrossDocumentFragments();
+                    this.hostParent.addEventListener("drag", this.drag.bind(this));
+                    this.hostParent.addEventListener("dragenter", this.dragEnter.bind(this));
+                    this.hostParent.addEventListener("dragleave", this.dragLeave.bind(this));
+                    this.hostParent.addEventListener("dragover", this.dragOver.bind(this));
+                    this.hostParent.addEventListener("drop", this.drop.bind(this));
+                    var ownerDocument = this.shadowRoot.host.ownerDocument;
+                    if (!ownerDocument.highlightDropzones) {
+                        ownerDocument.highlightDropzones = function(event) {
+                            event.preventDefault();
+                            Array.prototype.slice.call(ownerDocument.querySelectorAll("html /deep/ mdcms-upload-dropzone")).forEach(function(dropzone) {
+                                if (dropzone.acceptsDrop(event)) {
+                                    dropzone.classList.add("highlighted");
+                                    dropzone.highlight();
+                                }
+                            });
+                        }
+                    }
+                    if (!ownerDocument.unhighlightDropzones) {
+                        ownerDocument.unhighlightDropzones = function(event) {
+                            console.log("Unhighlighting dropzones");
+                            Array.prototype.slice.call(ownerDocument.querySelectorAll("html /deep/ mdcms-upload-dropzone.highlighted")).forEach(function(dropzone) {
+                                    dropzone.classList.remove("highlighted");
+                                    dropzone.unhighlight();
+                            });
+                        }
+                    }
+
+                    ownerDocument.addEventListener("drop", this.killEvent.bind(this), false);
+                    ownerDocument.addEventListener("dragover", ownerDocument.highlightDropzones, false);
+                    ownerDocument.addEventListener("dragleave", ownerDocument.unhighlightDropzones, false);
+                },
+                killEvent: function(event) {
+                    event.preventDefault();
+                },
+                acceptsDrop: function(event) {
+                    var dt = event.dataTransfer;
+                    if (dt.items.length > 0) {
+                        var item = dt.items[0];
+                        if (/^image\/.*$/.test(item.type)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                highlight: function() {
+//                    this.displayOverlay();
+                },
+                unhighlight: function() {
+//                    this.hideOverlay();
+                },
+                dragEnter: function(event) {
+                    event.preventDefault();
+                    console.log("Dragging, dataTransfer: ", event.dataTransfer);
+/*
+                    var dt = event.dataTransfer;
+                    if (this.acceptsDrop(event)) {
+                        this.displayOverlay();
+                    }
+*/
+                },
+                drag: function(event) {
+                    event.preventDefault();
+                },
+                dragOver: function(event) {
+                    event.preventDefault();
+                    if (this.acceptsDrop(event)) {
+                        this.displayOverlay();
+                    }
+                },
+                dragLeave: function(event) {
+                    event.preventDefault();
+                    this.hideOverlay();
+                },
+                drop: function(event) {
+                    console.log("Dropped", event);
+                    this.hideOverlay();
+                },
+                displayOverlay: function() {
+/*
+                    var textEdit = this.shadowRoot.host;
+                    var x = textEdit.offsetLeft;
+                    var y = textEdit.offsetTop;
+                    var width = textEdit.offsetWidth;
+                    var height = textEdit.offsetHeight;
+                    this.dragOverlay.style.top = y + "px";
+                    this.dragOverlay.style.left = x + "px";
+                    this.dragOverlay.style.width = width + "px";
+                    this.dragOverlay.style.height = height + "px";
+                    this.dragOverlay.style.display = "-webkit-box";
+*/
+                    this.dragOverlay.style.display = "block";
+                },
+                hideOverlay: function() {
+                    this.dragOverlay.style.display = "none"
+                }
+
+            });
+        })();
+    </script>
+    <template>
+        <style>
+            #drag-upload-overlay {
+                font-family: "Helvetica Neue Light", Arial, sans-serif;
+                font-size: 24pt;
+                text-shadow: 2px 2px;
+                vertical-align: middle;
+                z-index: 1001;
+                position: absolute;
+                display: none;
+                background-color: gray;
+                text-align: center;
+                /*opacity: .6;*/
+                /*display: -webkit-box;*/
+                -webkit-box-pack: center;
+                -webkit-box-align: center;
+            }
+            :host {
+                display: block;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }
+            :host(.highlighted) {
+                box-shadow: 0 0 10pt 10pt yellow;
+            }
+            :host(.highlighted:hover) {
+              background-color: blue;
+            }
+
+        </style>
+        <div id="drag-upload-overlay">
+            Drop here to upload
+        </div>
+    </template>
+</polymer-element>
