@@ -6,13 +6,14 @@ html
   head
     title= title
     link(rel='stylesheet', href='/public/stylesheets/style.css')
-    script(src='/public/bower_components/platform/platform.js')
-    link(rel='import', href='/public/bower_components/polymer/polymer.html')
-    script(type='text/javascript', src='/public/javascripts/admin.js')
-    link(rel='import', href="/public/components/webdavclient.html")
-    link(rel='import', href="/public/components/markdown-editor.html")
-    link(rel='import', href="/public/components/admin-bar.html")
     meta(charset='utf-8')
+    if user
+      script(src='/public/bower_components/platform/platform.js')
+      link(rel='import', href='/public/bower_components/polymer/polymer.html')
+      script(type='text/javascript', src='/public/javascripts/admin.js')
+      link(rel='import', href="/public/components/webdavclient.html")
+      link(rel='import', href="/public/components/markdown-editor.html")
+      link(rel='import', href="/public/components/admin-bar.html")
     block head
   body
       if user

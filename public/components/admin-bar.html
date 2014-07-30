@@ -1,7 +1,17 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <polymer-element name="mdcms-admin-bar" attributes="userName userEmail">
     <script>
-        Polymer('mdcms-admin-bar', {});
+        Polymer('mdcms-admin-bar', {
+            domReady: function() {
+                var _this = this;
+                this.$["collapse"].addEventListener("click", function(evt) {
+                    _this.shadowRoot.host.classList.add("collapsed");
+                });
+                this.$["expand"].addEventListener("click", function(evt) {
+                    _this.shadowRoot.host.classList.remove("collapsed");
+                });
+            }
+        });
     </script>
     <template>
         <style>
@@ -10,9 +20,12 @@
                 border-bottom: outset;
                 top: 0;
                 left: 0;
-                right: 0;
+                /*right: 0;*/
+                width: 100%;
+                box-sizing: border-box;
                 padding: 3px;
                 font-size: 9pt;
+                font-family: Arial, sans-serif;
                 background-color: #ccffcc;
                 color: #000000;
                 display: flex;
@@ -21,9 +34,34 @@
                 flex-wrap: nowrap;
                 flex-flow: row;
                 justify-content: space-between;
+                transition-property: width;
+                transition-duration: .5s;
+            }
+            :host(.collapsed) {
+                display: block;
+                width: 20px;
+                transition-property: width;
+                transition-duration: .5s;
+            }
+            :host(.collapsed) > :not(expander) {
+                display: none;
+            }
+            :host(.collapsed) expander #collapse {
+                display: none;
+            }
+            :host(:not(.collapsed)) expander #expand {
+                display: none;
+            }
+            expander {
+                font-family: Webdings;
+                cursor: pointer;
             }
         </style>
-        Logged in as {{userName}} ({{userEmail}})
+        <expander>
+            <span id="collapse"></span>
+            <span id="expand"></span>
+        </expander>
+        <span>Logged in as {{userName}} ({{userEmail}})</span>
         <a href="/auth/logout">Log out</a>
     </template>
 </polymer-element>

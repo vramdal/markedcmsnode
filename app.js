@@ -60,6 +60,8 @@ var jsDAV = require("jsDAV/lib/jsdav");
 //jsDAV.debugMode = true;
 var jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
 var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
+var jsDAV_Auth_Backend_External = require("./jsdav-plugin/AuthPlugin");
+var authBackend = jsDAV_Auth_Backend_External;
 /*
 jsDAV.createServer({
     "node": path.join(siteRootPath),
@@ -74,6 +76,7 @@ var jsDavService = jsDAV.mount({
     server:         app,
     standalone:     false,
     "locksBackend": locksBackend,
+    "authBackend": authBackend,
     plugins: jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
             "bufferResource": require("./jsdav-plugin/BufferResourcePlugin")
     })
@@ -94,7 +97,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-    done(null, {email: id, name: "Vidar"});
+    done(null, {id: id, email: id, name: "Vidar"});
 /*
   User.findById(id, function(err, user) {
     done(err, user);
@@ -119,6 +122,7 @@ app.get('/auth/google/return',
             res.redirect(req.session.goAfterLogin ? req.session.goAfterLogin : "/");
         });
 app.get("/auth/logout", function(req, res, next) {
+    req.session.goAfterLogin = undefined;
     req.logout();
     res.redirect(req.headers["referer"] ? req.headers["referer"] : "/");
 });
