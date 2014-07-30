@@ -134,7 +134,7 @@ app.all("*",
             return next();
         },
         function(req, res, next) {
-            if (req.url.search(/^\/.*\/$/) >= 0) {
+            if (req.url.search(/^\/.*\/$/) >= 0 && req.method == "GET") {
                 req.url = req.url + "index.page.json";
                 req["markedCms"].bufferResource = true;
                 req["markedCms"].render = true;
