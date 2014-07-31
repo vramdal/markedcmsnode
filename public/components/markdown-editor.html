@@ -30,9 +30,6 @@
             var dt = event.getDataTransfer();
             console.log("DataTransfer types:", dt.types, "files: ", dt.files.length);
             if (dt.items.length == 1) {
-                var overlay = polymerThis.$["drag-upload-overlay"];
-                overlay.style.display = "none";
-
                 event.preventDefault();
                 event.cancelBubble = true;
                 console.log("Dropping", event);
@@ -59,73 +56,9 @@
             reader.readAsDataURL(file);
         }
 
-        function hideOverlay(overlay) {
-            overlay.style.display = "none";
-        }
-
-        function displayOverlay(overlay) {
-            var textEdit = polymerThis.$["wmd-input"];
-            var x = textEdit.offsetLeft;
-            var y = textEdit.offsetTop;
-            var width = textEdit.offsetWidth;
-            var height = textEdit.offsetHeight;
-            overlay.style.top = y + "px";
-            overlay.style.left = x + "px";
-            overlay.style.width = width + "px";
-            overlay.style.height = height + "px";
-            overlay.style.display = "-webkit-box";
-        }
-
         function cancelEvent(event) {
             event.preventDefault();
             return false;
-        }
-
-        function dragIntercept(event) {
-//            var textedit = polymerThis.$["wmd-input"];
-            console.log("Dragging");
-//            console.log("TextEdit selection: ", textedit.selectionStart, textedit.selectionEnd);
-//            console.log("Dragging", event);
-            var dt = event.getDataTransfer();
-//            console.log("DataTransfer types:", dt.types, "files: ", dt.files.length, "items: " + dt.items.length);
-            if (dt.items.length > 0) {
-                var item = dt.items[0];
-//                console.log("Item: ", item);
-//                console.log("Type: ", item.type);
-                if (/^image\/.*$/.test(item.type)) {
-//                    console.log("Image");
-                    displayOverlay(polymerThis.$["drag-upload-overlay"]);
-                }
-//                console.log("Kind: ", item.kind);
-//                var file = item.getAsFile();
-//                console.log("File: ", file);
-            }
-        }
-
-        function dragLeaveIntercept() {
-            console.log("Drag leave");
-            var overlay = polymerThis.$["drag-upload-overlay"];
-            overlay.style.display = "none";
-        }
-
-        function pasteIntercept(event) {
-            console.log("Pasting", event);
-            if (event.clipboardData) {
-                console.log("ClipboardData", event.clipboardData);
-                var dt = event.clipboardData;
-                if (dt.items.length > 0) {
-                    var item = dt.items[0];
-    //                console.log("Item: ", item);
-    //                console.log("Type: ", item.type);
-                    if (/^image\/.*$/.test(item.type)) {
-    //                    console.log("Image");
-                        alert("Pasting image");
-                    }
-                    console.log("Kind: ", item.kind);
-                    var file = item.getAsFile();
-                    console.log("File: ", file);
-                }
-            }
         }
 
     Polymer('mdcms-markdown-editor', {
@@ -159,19 +92,13 @@
                 }
                 return imageUrls;
             };
-            console.log("Adding dragEnter handler");
-            this.textArea.addEventListener("dragenter", dragIntercept, true);
-            console.log("Adding paste handler");
-            this.textArea.addEventListener("paste", pasteIntercept);
             var panel = polymerThis.$["wmd-panel"];
-            var dragUploadOverlay = polymerThis.$["drag-upload-overlay"];
             var imageUploadOverlay = polymerThis.$["image-upload-overlay"];
 
             panel.addEventListener("drop", dropIntercept);
             panel.addEventListener("dragover", cancelEvent);
-            editor.hooks.set("insertImageDialog", function (callback) {
+/*            editor.hooks.set("insertImageDialog", function (callback) {
                 if (window.droppedImg) {
-                    hideOverlay(dragUploadOverlay);
 //                    console.log("Dropped blob: ", window.droppedImg);
                     imageUploadOverlay.appendChild(window.droppedImg);
                     var progressEl = document.createElement("progress");
@@ -217,7 +144,7 @@
                 }
 
                 return true; // tell the editor that we'll take care of getting the image url
-            });
+            })*/;
             editor.hooks.chain("onPreviewRefresh", function() {
                 var message = {"mdcms-content-id": polymerThis.mdCmsContentId, "html": polymerThis.$["wmd-preview"].innerHTML};
                 polymerThis.asyncFire("refresh-preview", message);
@@ -289,7 +216,7 @@
           }
 
           /*noinspection CssUnusedSymbol,CssUnknownProperty*/
-          #drag-upload-overlay, #image-upload-overlay {
+          #image-upload-overlay {
               font-family: "Helvetica Neue Light", Arial, sans-serif;
               font-size: 24pt;
               text-shadow: 2px 2px;
@@ -324,9 +251,6 @@
           <div class="wmd-panel" id="wmd-panel">
               <div id="image-upload-overlay">
 
-              </div>
-              <div id="drag-upload-overlay">
-                  Drop here to upload
               </div>
               <div id="wmd-button-bar" style="">
               </div>
