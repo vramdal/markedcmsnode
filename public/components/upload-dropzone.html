@@ -1,57 +1,98 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<polymer-element name="mdcms-upload-dropzone" attributes="content-type">
+<polymer-element name="mdcms-upload-dropzone" attributes="content-type targetId">
     <script type="text/javascript" src="../javascripts/polyfills.js"></script>
     <script>
         (function () {
             Polymer('mdcms-upload-dropzone', {
                 "content-type": undefined,
                 dragOverlay: undefined,
+                targetId: undefined,
+                globalHighlightDropzones: function (event) {
+                    var ownerDocument = this.shadowRoot.host.ownerDocument;
+                    event.preventDefault();
+                    Array.prototype.slice.call(ownerDocument.querySelectorAll("html /deep/ mdcms-upload-dropzone")).forEach(function (dropzone) {
+                        if (dropzone.acceptsDrop(event)) {
+                            dropzone.classList.add("highlighted");
+                            dropzone.highlight();
+                        }
+                    });
+                },
+                globalUnhighlightDropzones : function (event) {
+                    var ownerDocument = this.shadowRoot.host.ownerDocument;
+                    console.log("Unhighlighting dropzones");
+                    Array.prototype.slice.call(ownerDocument.querySelectorAll("html /deep/ mdcms-upload-dropzone.highlighted")).forEach(function (dropzone) {
+                        dropzone.classList.remove("highlighted");
+                        dropzone.unhighlight();
+                    });
+                },
                 domReady: function() {
                     this.dragOverlay = this.$["drag-upload-overlay"];
-                    this.hostParent = this.shadowRoot.host.parentElementAcrossDocumentFragments();
+                    if (this.targetId == undefined) {
+                        this.hostParent = this.shadowRoot.host.parentElementAcrossDocumentFragments();
+                    } else {
+                        this.hostParent = this.shadowRoot.getParentFragment().getElementById(this.targetId);
+                    }
                     this.hostParent.addEventListener("drag", this.drag.bind(this));
                     this.hostParent.addEventListener("dragenter", this.dragEnter.bind(this));
                     this.hostParent.addEventListener("dragleave", this.dragLeave.bind(this));
                     this.hostParent.addEventListener("dragover", this.dragOver.bind(this));
                     this.hostParent.addEventListener("drop", this.drop.bind(this));
+                    this.hostParent.addEventListener("paste", this.paste.bind(this));
                     var ownerDocument = this.shadowRoot.host.ownerDocument;
                     if (!ownerDocument.highlightDropzones) {
-                        ownerDocument.highlightDropzones = function(event) {
-                            event.preventDefault();
-                            Array.prototype.slice.call(ownerDocument.querySelectorAll("html /deep/ mdcms-upload-dropzone")).forEach(function(dropzone) {
-                                if (dropzone.acceptsDrop(event)) {
-                                    dropzone.classList.add("highlighted");
-                                    dropzone.highlight();
-                                }
-                            });
-                        }
+                        ownerDocument.highlightDropzones = this.globalHighlightDropzones;
                     }
                     if (!ownerDocument.unhighlightDropzones) {
-                        ownerDocument.unhighlightDropzones = function(event) {
-                            console.log("Unhighlighting dropzones");
-                            Array.prototype.slice.call(ownerDocument.querySelectorAll("html /deep/ mdcms-upload-dropzone.highlighted")).forEach(function(dropzone) {
-                                    dropzone.classList.remove("highlighted");
-                                    dropzone.unhighlight();
-                            });
-                        }
+                        ownerDocument.unhighlightDropzones = this.globalUnhighlightDropzones
                     }
-
                     ownerDocument.addEventListener("drop", this.killEvent.bind(this), false);
-                    ownerDocument.addEventListener("dragover", ownerDocument.highlightDropzones, false);
-                    ownerDocument.addEventListener("dragleave", ownerDocument.unhighlightDropzones, false);
+                    ownerDocument.addEventListener("dragover", ownerDocument.highlightDropzones.bind(this), false);
+                    ownerDocument.addEventListener("dragleave", ownerDocument.unhighlightDropzones.bind(this), false);
                 },
                 killEvent: function(event) {
                     event.preventDefault();
                 },
                 acceptsDrop: function(event) {
+                    return this.getMatchingItems(event).length > 0;
+                },
+                getMatchingItems: function(event) {
+                    var result = [];
                     var dt = event.dataTransfer;
                     if (dt.items.length > 0) {
-                        var item = dt.items[0];
-                        if (/^image\/.*$/.test(item.type)) {
-                            return true;
+                        for (var i = 0; i < dt.items.length; i++) {
+                            var item = dt.items[i];
+                            if (this.acceptsItem(item)) {
+                                result.push(item);
+                            }
                         }
                     }
-                    return false;
+                    return result;
+                },
+                acceptsItem: function(item) {
+                    return /^image\/.*$/.test(item.type);
+                },
+                itemsToFiles: function(itemsArr) {
+                    var files = [];
+                    for (var i = 0; i < itemsArr.length; i++) {
+                        var item = itemsArr[i];
+                        if (item.kind == "file") {
+                            var file = item.getAsFile();
+                            files.push({
+                                        "type": item.type,
+                                        "name": file.name,
+                                        "size": file.size,
+                                        "lastModifiedDate": file.lastModifiedDate,
+                                        "blob": file,
+                                        "getAsString": item.getAsString.bind(item),
+                                        "webkitGetAsEntry": item.webkitGetAsEntry ? item.webkitGetAsEntry.bind(item) : undefined
+                                    }
+                            );
+
+                        } else {
+                            // TODO?
+                        }
+                    }
+                    return files;
                 },
                 highlight: function() {
 //                    this.displayOverlay();
@@ -85,6 +126,17 @@
                 drop: function(event) {
                     console.log("Dropped", event);
                     this.hideOverlay();
+                    this.fire("dropped", {"dropped": this.itemsToFiles(this.getMatchingItems(event))});
+                },
+                paste: function(event) {
+                    var items = [];
+                    console.log("Pasted", event);
+                    if (event.clipboardData && event.clipboardData.items) {
+                        items = this.itemsToFiles(event.clipboardData.items);
+                    }
+                    if (items.length > 0) {
+                        this.fire("dropped", {"dropped": items});
+                    }
                 },
                 displayOverlay: function() {
 /*
@@ -140,7 +192,7 @@
 
         </style>
         <div id="drag-upload-overlay">
-            Drop here to upload
+            <content></content>
         </div>
     </template>
 </polymer-element>

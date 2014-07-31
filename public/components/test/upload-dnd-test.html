@@ -6,12 +6,35 @@
     <script src="../../../public/bower_components/platform/platform.js"></script>
     <link rel="import" href="../../bower_components/polymer/polymer.html">
     <link rel="import" href="../upload-dropzone.html">
+    <style>
+        mdcms-upload-dropzone, #dropTarget {
+            position: absolute;
+            left: 10px;
+            top: 50px;
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+    <script>
+        function handleFileDrop(event) {
+            console.log("File dropped", event);
+            for (var i = 0; i < event.detail.dropped.length; i++) {
+                var dropped = event.detail.dropped[i];
+                console.log(dropped);
+            }
+        }
+        window.addEventListener("load", function() {
+            document.querySelector("mdcms-upload-dropzone").addEventListener("dropped", function(event) {
+                handleFileDrop(event);
+            });
+        });
+    </script>
 </head>
 <body>
-<div style="position: absolute; left: 10px; top: 50px; width: 200px; height: 200px">
-    <mdcms-upload-dropzone content-type="image/*"></mdcms-upload-dropzone>
+<mdcms-upload-dropzone content-type="image/*" targetId="dropTarget"></mdcms-upload-dropzone>
+<textarea id="dropTarget" style="position: absolute; left: 10px; top: 50px; width: 200px; height: 200px">
     I denne boksen skal jeg kunne dra-og-slippe inn ting.
-</div>
+</textarea>
 
 <div style="position: absolute; left: 250px; top: 50px; width: 100px; height: 200px">
     <img src="https://ssl.gstatic.com/gb/images/v1_2e543709.png"/>
