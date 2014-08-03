@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <script src="../../../public/bower_components/platform/platform.js"></script>
+    <link rel="import" href="../../bower_components/polymer/polymer.html">
+    <link rel="import" href="../image-editor.html">
+    <meta charset="UTF-8">
+    <title></title>
+    <script>
+        window.addEventListener("polymer-ready", function() {
+            var xhr = new XMLHttpRequest();
+            xhr.open( "GET", "IMG_2534.jpg", true );
+
+            xhr.responseType = "arraybuffer";
+
+            xhr.onload = function( e ) {
+                // Obtain a blob: URL for the image data.
+                var arrayBufferView = new Uint8Array( this.response );
+                var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } );
+                document.querySelector("mdcms-image-editor").blob = blob;
+/*
+                var urlCreator = window.URL || window.webkitURL;
+                var imageUrl = urlCreator.createObjectURL( blob );
+                var img = document.querySelector( "#photo" );
+                img.src = imageUrl;
+*/
+            };
+
+            xhr.send();
+            document.querySelector("mdcms-image-editor").addEventListener("preview-image-selected", function(evt) {
+                console.log(evt);
+            });
+        });
+    </script>
+</head>
+<body>
+<img style="display: none" id="image" src="https://lh5.googleusercontent.com/-CCm4JVWThZk/U9WH-fp3cjI/AAAAAAAAWAQ/ZbQrwjh3gVg/w709-h532-no/IMG_2534.jpg"/>
+<mdcms-image-editor></mdcms-image-editor>
+</body>
+</html>

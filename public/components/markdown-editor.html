@@ -1,5 +1,9 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-overlay/core-overlay.html">
+<link rel="import" href="../bower_components/core-transition/core-transition-css.html">
 <link rel="import" href="toolwindow.html">
+<link rel="import" href="upload-dropzone.html">
+<link rel="import" href="image-editor.html">
 <!--<link rel="import" href="../bower_components/core-ajax/core-ajax.html">-->
 
 <polymer-element name="mdcms-markdown-editor" attributes="mdCmsContentId">
@@ -12,55 +16,6 @@
         var editor;
         var polymerThis;
 
-
-        MouseEvent.prototype.getDataTransfer = function() {
-            if (this.dataTransfer) {
-                console.log("Returning dataTransfer");
-                return this.dataTransfer;
-            } else if (this.clipboardData) {
-                console.log("Returning clipboardData");
-                return this.cliboardData;
-            } else {
-                console.error("FEIL: No data");
-            }
-        };
-
-        function dropIntercept(event) {
-//            alert("Dropped");
-            var dt = event.getDataTransfer();
-            console.log("DataTransfer types:", dt.types, "files: ", dt.files.length);
-            if (dt.items.length == 1) {
-                event.preventDefault();
-                event.cancelBubble = true;
-                console.log("Dropping", event);
-                console.log("Caret position: " + polymerThis.$["wmd-input"].selectionStart);
-                var item = dt.items[0];
-                console.log("Kind: ", item.kind);
-                var file = item.getAsFile();
-                window.droppedFile = file;
-                console.log("File: ", file);
-            } else {
-                return;
-            }
-            // Fra http://html5demos.com/dnd-upload
-            var reader = new FileReader();
-            reader.onload = function(event){
-                console.log("Setter window.droppedBlob til", event.target.result);
-                var image = new Image();
-                image.width = 250; // A fake resize
-                image.src = event.target.result;
-                window.droppedImg = image;
-//                window.droppedFile = event.target.result;
-                polymerThis.$["wmd-panel"].querySelector("#wmd-image-button").click();
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function cancelEvent(event) {
-            event.preventDefault();
-            return false;
-        }
-
     Polymer('mdcms-markdown-editor', {
         mdCmsContentId: "content-url-goes-here",
         textArea: undefined,
@@ -69,6 +24,20 @@
         },
         set value(txt) {
             this.textArea.value = txt;
+        },
+        handleFileDrop: function(event) {
+            console.log("File dropped", event);
+            for (var i = 0; i < event.detail.dropped.length; i++) {
+                var dropped = event.detail.dropped[i];
+                console.log(dropped);
+                var imageEditor = this.shadowRoot.querySelector("mdcms-image-editor");
+                var overlay = this.shadowRoot.querySelector("#image-editor-overlay");
+                imageEditor.blob = event.detail.dropped[i].blob = dropped.blob;
+                overlay.open();
+            }
+        },
+        domReady: function() {
+            this.shadowRoot.querySelector("mdcms-upload-dropzone").addEventListener("dropped", this.handleFileDrop.bind(this));
         },
         attached: function() {
             var md = Markdown.getSanitizingConverter();
@@ -92,11 +61,6 @@
                 }
                 return imageUrls;
             };
-            var panel = polymerThis.$["wmd-panel"];
-            var imageUploadOverlay = polymerThis.$["image-upload-overlay"];
-
-            panel.addEventListener("drop", dropIntercept);
-            panel.addEventListener("dragover", cancelEvent);
 /*            editor.hooks.set("insertImageDialog", function (callback) {
                 if (window.droppedImg) {
 //                    console.log("Dropped blob: ", window.droppedImg);
@@ -156,7 +120,6 @@
                 _this.textArea.value = text;
                 editor.refreshPreview();
             });
-
         }
     });
     </script>
@@ -248,6 +211,16 @@
 
       </style>
       <mdcms-toolwindow title="Markdown Editor" resize="none">
+          <mdcms-upload-dropzone content-type="image/*" dropEffect="copy">
+              Drop files here to insert them into the text
+          </mdcms-upload-dropzone>
+          <core-overlay backdrop="true" layered="true" id="image-editor-overlay"
+                        style="background-color: white; padding: 1em" transition="core-transition-center">
+              <h1>Select image size</h1>
+              <mdcms-image-editor></mdcms-image-editor>
+              <button core-overlay-toggle>Cancel</button>
+          </core-overlay>
+
           <div class="wmd-panel" id="wmd-panel">
               <div id="image-upload-overlay">
 

@@ -5,7 +5,9 @@
     <title></title>
     <script src="../../../public/bower_components/platform/platform.js"></script>
     <link rel="import" href="../../bower_components/polymer/polymer.html">
+    <link rel="import" href="../../bower_components/core-overlay/core-overlay.html">
     <link rel="import" href="../upload-dropzone.html">
+    <link rel="import" href="../image-editor.html">
     <style>
         mdcms-upload-dropzone, #dropTarget {
             position: absolute;
@@ -14,6 +16,10 @@
             width: 200px;
             height: 200px;
         }
+        core-overlay {
+            background-color: white;
+            padding: 1em;
+        }
     </style>
     <script>
         function handleFileDrop(event) {
@@ -21,6 +27,10 @@
             for (var i = 0; i < event.detail.dropped.length; i++) {
                 var dropped = event.detail.dropped[i];
                 console.log(dropped);
+                var imageEditor = document.querySelector("mdcms-image-editor");
+                var overlay = document.querySelector("#image-editor-overlay");
+                imageEditor.blob = event.detail.dropped[i].blob = dropped.blob;
+                overlay.open();
             }
         }
         window.addEventListener("load", function() {
@@ -31,7 +41,11 @@
     </script>
 </head>
 <body>
-<mdcms-upload-dropzone content-type="image/*" targetId="dropTarget"></mdcms-upload-dropzone>
+<mdcms-upload-dropzone content-type="image/*" targetId="dropTarget" dropEffect="move"></mdcms-upload-dropzone>
+<core-overlay backdrop="true" id="image-editor-overlay">
+    <mdcms-image-editor></mdcms-image-editor>
+    <button core-overlay-toggle>Cancel</button>
+</core-overlay>
 <textarea id="dropTarget" style="position: absolute; left: 10px; top: 50px; width: 200px; height: 200px">
     I denne boksen skal jeg kunne dra-og-slippe inn ting.
 </textarea>

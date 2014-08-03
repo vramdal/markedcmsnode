@@ -29,6 +29,10 @@ mdcms-toolwindow {
     display: block;
 }
 
+core-overlay {
+    background-color: white;
+}
+
 .mdcms-content.unfocused {
     opacity: .3;
     transition-property: opacity;

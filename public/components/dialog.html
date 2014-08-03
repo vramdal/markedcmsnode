@@ -1,0 +1,45 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<polymer-element name="mdcms-dialog" attributes="">
+    <script>
+        Polymer('mdcms-dialog', {
+            domReady: function () {
+            }
+        });
+    </script>
+    <template>
+        <style>
+            :host {
+              position: absolute;
+              left: 0; right: 0;
+              margin: auto;
+              border: solid;
+              padding: 1em;
+              background: white;
+              color: black;
+
+              width: -moz-fit-content;
+              width: -webkit-fit-content;
+              width: fit-content;
+
+              height: -moz-fit-content;
+              height: -webkit-fit-content;
+              height: fit-content;
+
+              display: none;
+            }
+
+            :host([open]) {
+              display: block;
+            }
+
+            .backdrop {
+              position: fixed;
+              background: rgba(0,0,0,0.1);
+              top: 0;
+              bottom: 0;
+              left: 0;
+              right: 0;
+            }
+        </style>
+    </template>
+</polymer-element>

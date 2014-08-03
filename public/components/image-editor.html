@@ -1,0 +1,187 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<polymer-element name="mdcms-preview-canvas" attributes="name contentWidth previewWidth previewHeight">
+    <script>
+        Polymer("mdcms-preview-canvas", {
+            created: function() {
+                this.name = '';
+                this.contentWidth = 0;
+                this.previewWidth = 200;
+                this.previewHeight = 200;
+            },
+            domReady: function() {
+                this.canvas = this.$["canvas"];
+                this.getContext = this.canvas.getContext.bind(this.canvas);
+                this.context = this.canvas.getContext("2d");
+            },
+            publish: {
+                img: {}
+            },
+            redraw: function() {
+                var imgWidth = this.img.width;
+                var imgHeight = this.img.height;
+                if (this.contentWidth) {
+                    var factor = this.contentWidth / imgWidth;
+                    var targetHeight = imgHeight * factor;
+                    this.scaledWidth = this.contentWidth;
+                    this.canvas.width = this.scaledWidth;
+                    this.scaledHeight = targetHeight;
+                    this.canvas.height = this.scaledHeight;
+                } else {
+                    this.scaledWidth = imgWidth;
+                    this.scaledHeight = imgHeight;
+                    this.canvas.width = imgWidth;
+                    this.canvas.height = imgHeight;
+                }
+/*
+                if (this.scaledWidth > this.shadowRoot.host.clientWidth) {
+                    this.shadowRoot.host.classList.add("overflow-x");
+                } else {
+                    this.shadowRoot.host.classList.remove("overflow-x");
+                }
+                if (this.scaledHeight > this.shadowRoot.host.clientHeight) {
+                    this.shadowRoot.host.classList.add("overflow-y");
+                } else {
+                    this.shadowRoot.host.classList.remove("overflow-y");
+                }
+*/
+//                this.shadowRoot.host.style.height = targetHeight + "px";
+//                this.shadowRoot.host.style.width = this.contentWidth + "px";
+/*
+                if (this.canvas.width > this.contentWidth) {
+                    this.canvas.width = imgWidth;
+                }
+                if (this.canvas.height > targetHeight) {
+                    this.canvas.height = targetHeight;
+                }
+*/
+                this.context.drawImage(this.img, 0, 0, this.scaledWidth, this.scaledHeight);
+            },
+            round: function(value) {
+                return Math.round(value);
+            },
+            imgChanged: function() {
+//                if (this.contentWidth && (this.contentWidth < this.img.width)) {
+                    this.redraw();
+//                } else if (!this.contentWidth || true) {
+//                    this.context.drawImage(this.img, 0, 0);
+//                }
+
+            },
+            onHovered: function() {
+                this.shadowRoot.host.style.zIndex = 9;
+            },
+            onUnhovered: function() {
+                this.shadowRoot.host.style.zIndex = 0;
+            },
+            onClicked: function(evt) {
+                var imageData =  this.context.getImageData(0, 0, this.scaledWidth, this.scaledHeight);
+                this.fire("preview-image-clicked", {
+                    "image": this.img,
+                    "sizeName": this.name,
+                    "imageData": imageData
+                });
+            }
+        });
+    </script>
+    <template>
+        <style>
+            :host {
+                display: flex;
+            }
+            :host(:hover) {
+                /*z-index: 9;*/
+            }
+            .canvas-wrapper {
+                max-width: 200px;
+                max-height: 100px;
+                overflow: hidden;
+                display: block;
+                background-color: white;
+            }
+            .canvas-wrapper:hover canvas {
+                border: 5px solid yellow;
+                transition: border-color 0.2s;
+            }
+/*
+            .canvas-wrapper:hover {
+                overflow: visible;
+            }
+*/
+            canvas {
+                border: 5px solid black;
+                box-shadow: 0 0 10px 2px #000;
+                cursor: pointer;
+            }
+            .preview-canvas-name {
+                background-color: #ffffff;
+                margin-left: 1em;
+            }
+        </style>
+        <div class="canvas-wrapper">
+            <canvas id="canvas" width="200" height="200" imgWidth="{{img.width}}px" imgHeight="{{img.height}}px"
+                    on-mouseover="{{onHovered}}" on-mouseout="{{onUnhovered}}" on-click="{{onClicked}}">
+
+            </canvas>
+            <br/>
+        </div>
+        <div class="preview-canvas-name">{{name}} - {{scaledWidth|round}} x {{scaledHeight|round}}</div>
+    </template>
+</polymer-element>
+
+<polymer-element name="mdcms-image-editor" attributes="">
+    <script>
+        Polymer('mdcms-image-editor', {
+            blobChanged: function () {
+                if (!this.domIsReady) {
+                    this.blobChangePending = true;
+                    return;
+                }
+                if (this.blobChangePending) {
+                    delete this.blobChangePending;
+                }
+                this.canvases = this.shadowRoot.querySelectorAll("mdcms-preview-canvas");
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    for (var i = 0; i < this.canvases.length; i++) {
+                        var canvas = this.canvases[i];
+                        var img = new Image();
+                        img.onload = function(canvas, img) {
+                            canvas.img = img;
+                        }.bind(this, canvas, img);
+                        img.src = URL.createObjectURL(this.blob);
+                    }
+                }.bind(this);
+                reader.readAsArrayBuffer(this.blob);
+            },
+            domReady: function() {
+                this.domIsReady = true;
+                if (this.blobChangePending) {
+                    this.blobChanged();
+                }
+                this.$["previews"].addEventListener("preview-image-clicked", function(evt) {
+                    this.fire("preview-image-selected", evt.detail);
+                }.bind(this), true);
+            },
+            publish: {
+               blob: undefined
+            }
+        });
+    </script>
+    <template>
+            <style>
+                #previews {
+                    display: flex;
+                    flex-flow: column;
+                    flex: 1 auto;
+                }
+            </style>
+        <div id="previews">
+            <mdcms-preview-canvas name="small" contentWidth="200"></mdcms-preview-canvas>
+            <mdcms-preview-canvas name="medium" contentWidth="400"></mdcms-preview-canvas>
+            <mdcms-preview-canvas name="large"  contentWidth="800"></mdcms-preview-canvas>
+            <mdcms-preview-canvas name="original"></mdcms-preview-canvas>
+        </div>
+    </template>
+
+</polymer-element>
+

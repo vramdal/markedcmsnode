@@ -1,12 +1,14 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<polymer-element name="mdcms-upload-dropzone" attributes="content-type targetId">
+<polymer-element name="mdcms-upload-dropzone" attributes="content-type targetId dropEffect">
     <script type="text/javascript" src="../javascripts/polyfills.js"></script>
+    <script type="text/javascript" src="../lib/contenttype/contenttype.js"></script>
     <script>
         (function () {
             Polymer('mdcms-upload-dropzone', {
                 "content-type": undefined,
                 dragOverlay: undefined,
                 targetId: undefined,
+                dropEffect: "copy",
                 globalHighlightDropzones: function (event) {
                     var ownerDocument = this.shadowRoot.host.ownerDocument;
                     event.preventDefault();
@@ -41,13 +43,14 @@
                     var ownerDocument = this.shadowRoot.host.ownerDocument;
                     if (!ownerDocument.highlightDropzones) {
                         ownerDocument.highlightDropzones = this.globalHighlightDropzones;
+                        ownerDocument.addEventListener("dragover", ownerDocument.highlightDropzones.bind(this), false);
                     }
                     if (!ownerDocument.unhighlightDropzones) {
-                        ownerDocument.unhighlightDropzones = this.globalUnhighlightDropzones
+                        ownerDocument.unhighlightDropzones = this.globalUnhighlightDropzones;
+                        ownerDocument.addEventListener("dragleave", ownerDocument.unhighlightDropzones.bind(this), false);
+                        ownerDocument.addEventListener("drop", ownerDocument.unhighlightDropzones.bind(this), true);
+                        ownerDocument.addEventListener("drop", this.killEvent.bind(this), false);
                     }
-                    ownerDocument.addEventListener("drop", this.killEvent.bind(this), false);
-                    ownerDocument.addEventListener("dragover", ownerDocument.highlightDropzones.bind(this), false);
-                    ownerDocument.addEventListener("dragleave", ownerDocument.unhighlightDropzones.bind(this), false);
                 },
                 killEvent: function(event) {
                     event.preventDefault();
@@ -69,7 +72,11 @@
                     return result;
                 },
                 acceptsItem: function(item) {
-                    return /^image\/.*$/.test(item.type);
+                    var itemMediaType = parseMedia(item.type);
+                    var acceptedMediaType = parseMedia(this["content-type"]);
+                    var result = mediaCmp(acceptedMediaType, itemMediaType);
+                    return result != null && result >= 0;
+//                    return /^image\/.*$/.test(item.type);
                 },
                 itemsToFiles: function(itemsArr) {
                     var files = [];
@@ -114,8 +121,10 @@
                     event.preventDefault();
                 },
                 dragOver: function(event) {
-                    event.preventDefault();
                     if (this.acceptsDrop(event)) {
+                        if (event.dataTransfer) {
+                            event.dataTransfer.dropEffect = this.dropEffect;
+                        }
                         this.displayOverlay();
                     }
                 },
@@ -187,7 +196,7 @@
                 box-shadow: 0 0 10pt 10pt yellow;
             }
             :host(.highlighted:hover) {
-              background-color: blue;
+              /*background-color: blue;*/
             }
 
         </style>
