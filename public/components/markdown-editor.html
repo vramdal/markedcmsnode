@@ -4,7 +4,16 @@
 <link rel="import" href="toolwindow.html">
 <link rel="import" href="upload-dropzone.html">
 <link rel="import" href="image-editor.html">
+<link rel="import" href="../bower_components/core-iconset/core-iconset.html">
 <!--<link rel="import" href="../bower_components/core-ajax/core-ajax.html">-->
+
+<core-iconset name="markdown-icons" extends="core-iconset" id="markdown-icons"
+                 src="../components/markdown-buttons.png"
+                 width="300"
+                 iconSize="20"
+        icons="bold italic link quote code image numbered-list bullet-list header rule undo redo help exit spacer">
+    <!--<property theme="disabled" offsetY="20"></property>-->
+</core-iconset>
 
 <polymer-element name="mdcms-markdown-editor" attributes="mdCmsContentId">
     <script type="text/javascript" src="../javascripts/polyfills.js"></script>
@@ -222,6 +231,7 @@
           </core-overlay>
 
           <div class="wmd-panel" id="wmd-panel">
+              <content></content>
               <div id="image-upload-overlay">
 
               </div>

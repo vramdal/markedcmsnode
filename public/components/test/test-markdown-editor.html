@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../../../public/bower_components/platform/platform.js"></script>
+    <link rel="import" href="../../bower_components/polymer/polymer.html">
+    <link rel="import" href="../markdown-editor.html">
+    <link rel="import" href="../../bower_components/core-toolbar/core-toolbar.html">
+    <link rel="import" href="../../bower_components/core-icon/core-icon.html">
+    <link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
+    <!--<link rel="import" href="../../bower_components/core-icons/iconsets/icons.html">-->
+    <link rel="import" href="../../bower_components/core-iconset-svg/core-iconset-svg.html">
+    <style>
+        core-icon-button {
+            width: 23px;
+            height: 25px;
+            padding: 0;
+            margin: 0;
+        }
+        core-icon-button /deep/ core-icon {
+            width: 20px !important;
+            height: 20px !important;
+                                }
+        core-icon-button[disabled] {
+            opacity: 0.1;
+        }
+        core-icon-button[src] /deep/ core-icon {
+            background-size: 20px 20px !important;
+        }
+        core-icon-button:hover:not([disabled]) {
+            box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.12);
+        }
+    /*
+        core-icon, core-icon-button /deep/ core-icon {
+            width: 20px !important;
+            height: 20px !important;
+            background-size: 280px 60px !important;
+        }
+    */</style>
+    <script>
+        function buttonClick(event) {
+            console.log("Button clicked", event);
+        }
+    </script>
+
+</head>
+<body>
+<!-- bold italic link quote code image numbered-list bullet-list header rule undo redo help exit -->
+<core-icon-button icon="markdown-icons:bold" on-click="buttonClick"></core-icon-button>
+<core-icon-button icon="markdown-icons:italic"></core-icon-button>
+<core-icon icon="markdown-icons:spacer"></core-icon>
+<core-icon-button icon="markdown-icons:link"></core-icon-button>
+<core-icon-button icon="markdown-icons:quote"></core-icon-button>
+<core-icon-button icon="markdown-icons:code"></core-icon-button>
+<core-icon icon="markdown-icons:spacer"></core-icon>
+<core-icon-button icon="markdown-icons:image"></core-icon-button>
+<core-icon icon="markdown-icons:spacer"></core-icon>
+<core-icon-button icon="markdown-icons:numbered-list"></core-icon-button>
+<core-icon-button icon="markdown-icons:bullet-list"></core-icon-button>
+<core-icon-button icon="markdown-icons:header"></core-icon-button>
+<core-icon-button icon="markdown-icons:rule"></core-icon-button>
+<core-icon icon="markdown-icons:spacer"></core-icon>
+<core-icon-button icon="markdown-icons:undo" disabled></core-icon-button>
+<core-icon-button icon="markdown-icons:redo"></core-icon-button>
+<core-icon icon="markdown-icons:spacer"></core-icon>
+<core-icon-button icon="markdown-icons:help"></core-icon-button>
+<core-icon-button src="../../components/save-icon.png"></core-icon-button>
+
+<mdcms-markdown-editor>
+</mdcms-markdown-editor>
+</body>
+</html>

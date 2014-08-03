@@ -1,0 +1,35 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<polymer-element name="markdown-editor" attributes="rows cols resize">
+    <script type="text/javascript" src="./lib/pagedown/Markdown.Converter.js"></script>
+    <script type="text/javascript" src="./lib/pagedown/Markdown.Sanitizer.js"></script>
+    <script type="text/javascript" src="Markdown.Editor.js"></script>
+    <script>
+        Polymer('markdown-editor', {
+            resize: "both",
+            attached: function () {
+                this.textarea = this.shadowRoot.querySelector("textarea");
+                this.textarea.value = this.value;
+                var md = Markdown.getSanitizingConverter();
+                editor = new Markdown.Editor(md, this.textarea);
+                editor.run();
+
+            },
+            get value() {
+                return this.textarea.value;
+            },
+            set value(value) {
+                this.textarea.value = value;
+            }
+        });
+    </script>
+    <template>
+        <style>
+            textarea {
+                resize: {{resize}};
+            }
+        </style>
+        <textarea rows="{{rows}}" cols="{{cols}}">
+        </textarea>
+        <div id="preview"></div>
+    </template>
+</polymer-element>
