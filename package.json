@@ -4,7 +4,8 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "node ./app.js"
+    "start": "node ./app.js",
+    "postinstall": "node_modules/.bin/bower install"
   },
   "dependencies": {
     "async": "~0.9.0",
@@ -23,7 +24,8 @@
     "pagedown": "*",
     "passport": "~0.2.0",
     "passport-google": "~0.3.0",
-    "streamifier": "^0.1.0"
+    "streamifier": "^0.1.0",
+    "bower": "~1.3.8"
   },
   "subdomain": "markedcms",
   "engines": {
