@@ -43,11 +43,17 @@
                     var ownerDocument = this.shadowRoot.host.ownerDocument;
                     if (!ownerDocument.highlightDropzones) {
                         ownerDocument.highlightDropzones = this.globalHighlightDropzones;
-                        ownerDocument.addEventListener("dragover", ownerDocument.highlightDropzones.bind(this), false);
+                        window.addEventListener("dragover", ownerDocument.highlightDropzones.bind(this), false);
                     }
                     if (!ownerDocument.unhighlightDropzones) {
                         ownerDocument.unhighlightDropzones = this.globalUnhighlightDropzones;
-                        ownerDocument.addEventListener("dragleave", ownerDocument.unhighlightDropzones.bind(this), false);
+                        window.addEventListener("dragleave", function(event) {
+                            if (event.target.tagName != "HTML") {
+                                return;
+                            }
+                            this.globalUnhighlightDropzones(event);
+
+                        }.bind(this));
                         ownerDocument.addEventListener("drop", ownerDocument.unhighlightDropzones.bind(this), true);
                         ownerDocument.addEventListener("drop", this.killEvent.bind(this), false);
                     }
@@ -110,12 +116,10 @@
                 dragEnter: function(event) {
                     event.preventDefault();
                     console.log("Dragging, dataTransfer: ", event.dataTransfer);
-/*
                     var dt = event.dataTransfer;
                     if (this.acceptsDrop(event)) {
                         this.displayOverlay();
                     }
-*/
                 },
                 drag: function(event) {
                     event.preventDefault();
@@ -160,7 +164,7 @@
                     this.dragOverlay.style.height = height + "px";
                     this.dragOverlay.style.display = "-webkit-box";
 */
-                    this.dragOverlay.style.display = "block";
+//                    this.dragOverlay.style.display = "block";
                 },
                 hideOverlay: function() {
                     this.dragOverlay.style.display = "none"
@@ -187,13 +191,14 @@
                 -webkit-box-align: center;
             }
             :host {
-                display: block;
+                display: none;
                 position: absolute;
                 width: 100%;
                 height: 100%;
             }
             :host(.highlighted) {
                 box-shadow: 0 0 10pt 10pt yellow;
+                display: block;
             }
             :host(.highlighted:hover) {
               /*background-color: blue;*/
