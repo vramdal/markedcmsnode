@@ -1,5 +1,14 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<core-iconset name="markdown-icons" extends="core-iconset" id="markdown-icons"
+                 src="buttons.png"
+                 width="300"
+                 iconSize="20"
+        icons="bold italic link quote code image numbered-list bullet-list header rule undo redo help exit spacer">
+    <!--<property theme="disabled" offsetY="20"></property>-->
+</core-iconset>
 <polymer-element name="markdown-editor" attributes="rows cols resize">
+    <link rel="import" href="../../bower_components/core-icon/core-icon.html">
+    <link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
     <script type="text/javascript" src="./lib/pagedown/Markdown.Converter.js"></script>
     <script type="text/javascript" src="./lib/pagedown/Markdown.Sanitizer.js"></script>
     <script type="text/javascript" src="Markdown.Editor.js"></script>
@@ -10,15 +19,44 @@
                 this.textarea = this.shadowRoot.querySelector("textarea");
                 this.textarea.value = this.value;
                 var md = Markdown.getSanitizingConverter();
-                editor = new Markdown.Editor(md, this.textarea);
-                editor.run();
-
+                this.features.getById = function(id) {
+                    for (var i = 0; i < this.length; i++) {
+                        var feature = this[i];
+                        if (feature.id == id) {
+                            return feature;
+                        }
+                    }
+                };
+                this.editor = new Markdown.Editor(md, this.textarea, {}, this);
             },
+            domReady: function() {
+                this.editor.run();
+                this.doBold();
+            },
+            features: {
+                "wmd-bold-button": {icon: "bold"},
+                "wmd-italic-button": {icon: "italic"},
+                "wmd-link-button": {icon: "link"},
+                "wmd-quote-button": {icon: "quote"},
+                "wmd-code-button": {icon: "code"},
+                "wmd-image-button": {icon: "image"},
+                "wmd-olist-button": {icon: "olist"},
+                "wmd-ulist-button": {icon: "ulist"},
+                "wmd-heading-button": {icon: "heading"},
+                "wmd-hr-button": {icon: "hr"},
+                "wmd-undo-button": {icon: "undo"},
+                "wmd-redo-button": {icon: "redo"},
+                "wmd-help-button": {icon: "help"},
+                "wmd-save-button": {icon: "save"}
+                },
             get value() {
                 return this.textarea.value;
             },
             set value(value) {
                 this.textarea.value = value;
+            },
+            doBold: function() {
+                this.shadowRoot.getElementById("wmd-bold-button").click();
             }
         });
     </script>
@@ -28,6 +66,26 @@
                 resize: {{resize}};
             }
         </style>
+        <core-icon-button id="wmd-bold-button" icon="markdown-icons:bold"></core-icon-button>
+        <core-icon-button id="wmd-italic-button" icon="markdown-icons:italic"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button id="wmd-link-button" icon="markdown-icons:link"></core-icon-button>
+        <core-icon-button id="wmd-quote-button" icon="markdown-icons:quote"></core-icon-button>
+        <core-icon-button id="wmd-code-button" icon="markdown-icons:code"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button id="wmd-image-button" icon="markdown-icons:image"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button id="wmd-olist-button" icon="markdown-icons:numbered-list"></core-icon-button>
+        <core-icon-button id="wmd-ulist-button" icon="markdown-icons:bullet-list"></core-icon-button>
+        <core-icon-button id="wmd-heading-button" icon="markdown-icons:header"></core-icon-button>
+        <core-icon-button id="wmd-hr-button" icon="markdown-icons:rule"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button id="wmd-undo-button" icon="markdown-icons:undo"></core-icon-button>
+        <core-icon-button id="wmd-redo-button" icon="markdown-icons:redo"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button icon="markdown-icons:help"></core-icon-button>
+        <core-icon-button id="wmd-save-button" src="../../components/save-icon.png"></core-icon-button>
+
         <textarea rows="{{rows}}" cols="{{cols}}">
         </textarea>
         <div id="preview"></div>

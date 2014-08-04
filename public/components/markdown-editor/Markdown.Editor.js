@@ -89,11 +89,12 @@
     // - getConverter() returns the markdown converter object that was passed to the constructor
     // - run() actually starts the editor; should be called after all necessary plugins are registered. Calling this more than once is a no-op.
     // - refreshPreview() forces the preview to be updated. This method is only available after run() was called.
-    Markdown.Editor = function (markdownConverter, textarea, options) {
+    Markdown.Editor = function (markdownConverter, textarea, options, polymerElement) {
         
         options = options || {};
 //        doc = owningDoc;
         this.input = textarea;
+        this.polymerElement = polymerElement;
         if (typeof options.handler === "function") { //backwards compatible behavior
             options = { helpButton: options };
         }
@@ -123,32 +124,32 @@
 //                return; // already initialized
 
 //            panels = new PanelCollection(idPostfix);
-            var commandManager = new CommandManager(hooks, getString);
+            this.commandManager = new CommandManager(hooks, getString);
             var previewManager = new PreviewManager(markdownConverter, this, function () { hooks.onPreviewRefresh(); });
-            var undoManager, uiManager;
+            var undoManager;
 
 //            if (!/\?noundo/.test(doc.location.href)) {
                 undoManager = new UndoManager(function () {
                     previewManager.refresh();
-                    if (uiManager) // not available on the first call
-                        uiManager.setUndoRedoButtonStates();
+                    if (this.uiManager) // not available on the first call
+                        this.uiManager.setUndoRedoButtonStates();
                 }, this);
                 this.textOperation = function (f) {
                     undoManager.setCommandMode();
                     f();
                     that.refreshPreview();
-                }
+                };
 //            }
 
-            uiManager = new UIManager(undefined, this, undoManager, previewManager, commandManager, options.helpButton, getString);
-            uiManager.setUndoRedoButtonStates();
+            this.uiManager = new UIManager(undefined, this, undoManager, previewManager, this.commandManager, options.helpButton, getString);
+            this.uiManager.setUndoRedoButtonStates();
 
             var forceRefresh = that.refreshPreview = function () { previewManager.refresh(true); };
 
             forceRefresh();
         };
 
-    }
+    };
 
     // before: contains all the text in the input box BEFORE the selection.
     // after: contains all the text in the input box AFTER the selection.
@@ -1234,7 +1235,7 @@
         var inputBox = editor.input,
             buttons = {}; // buttons.undo, buttons.link, etc. The actual DOM elements.
 
-        makeSpritedButtonRow();
+        makeSpritedButtonRow.call(editor);
 
         var keyEvent = "keydown";
         if (uaSniffed.isOpera) {
@@ -1251,44 +1252,44 @@
 
                 switch (keyCodeStr) {
                     case "b":
-                        doClick(buttons.bold);
+                        this.doClick(buttons.bold);
                         break;
                     case "i":
-                        doClick(buttons.italic);
+                        this.doClick(buttons.italic);
                         break;
                     case "l":
-                        doClick(buttons.link);
+                        this.doClick(buttons.link);
                         break;
                     case "q":
-                        doClick(buttons.quote);
+                        this.doClick(buttons.quote);
                         break;
                     case "k":
-                        doClick(buttons.code);
+                        this.doClick(buttons.code);
                         break;
                     case "g":
-                        doClick(buttons.image);
+                        this.doClick(buttons.image);
                         break;
                     case "o":
-                        doClick(buttons.olist);
+                        this.doClick(buttons.olist);
                         break;
                     case "u":
-                        doClick(buttons.ulist);
+                        this.doClick(buttons.ulist);
                         break;
                     case "h":
-                        doClick(buttons.heading);
+                        this.doClick(buttons.heading);
                         break;
                     case "r":
-                        doClick(buttons.hr);
+                        this.doClick(buttons.hr);
                         break;
                     case "y":
-                        doClick(buttons.redo);
+                        this.doClick(buttons.redo);
                         break;
                     case "z":
                         if (key.shiftKey) {
-                            doClick(buttons.redo);
+                            this.doClick(buttons.redo);
                         }
                         else {
-                            doClick(buttons.undo);
+                            this.doClick(buttons.undo);
                         }
                         break;
                     default:
@@ -1331,7 +1332,7 @@
 
 
         // Perform the button's action.
-        function doClick(button) {
+        this.doClick = function(button) {
 
             inputBox.focus();
 
@@ -1397,8 +1398,10 @@
 //            var disabledYShift = "-20px";
 //            var highlightYShift = "-40px";
 //            var image = button.getElementsByTagName("span")[0];
+//            this.polymerElement.features[]
             button.enabled = button.isEnabled == true;
             if (isEnabled) {
+                button.removeAttribute("disabled");
 //                image.style.backgroundPosition = button.XShift + " " + normalYShift;
 //                button.onmouseover = function () {
 //                    image.style.backgroundPosition = this.XShift + " " + highlightYShift;
@@ -1426,12 +1429,13 @@
                         if (this.onmouseout) {
                             this.onmouseout();
                         }
-                        doClick(this);
+                        editor.uiManager.doClick(this);
                         return false;
                     }
                 }
             }
             else {
+                button.setAttribute("disabled", "");
 //                image.style.backgroundPosition = button.XShift + " " + disabledYShift;
 //                button.onmouseover = button.onmouseout = button.onclick = function () { };
             }
@@ -1445,6 +1449,8 @@
 
         function makeSpritedButtonRow() {
 
+            var _this = this;
+
 //            var buttonBar = panels.buttonBar;
 
             var normalYShift = "0px";
@@ -1457,7 +1463,15 @@
 //            buttonRow = buttonBar.appendChild(buttonRow);
             var xPosition = 0;
             var makeButton = function (id, title, XShift, textOp) {
-                var button = document.createElement("li");
+                var button = editor.polymerElement.shadowRoot.getElementById(id);
+                button.textOp = textOp;
+/*
+                button.addEventListener("click", function() {
+                    doClick(this);
+                }, false);
+*/
+//                editor.polymerElement.features.getById(id).method = textOp;
+//                var button = {}; //document.createElement("li");
 //                button.className = "wmd-button";
 //                button.style.left = xPosition + "px";
 //                xPosition += 25;
@@ -1468,7 +1482,7 @@
 //                button.XShift = XShift;
                 if (textOp)
                     button.textOp = textOp;
-                setupButton(button, true);
+                setupButton.call(_this, button, true);
 //                buttonRow.appendChild(button);
                 return button;
             };
@@ -1478,8 +1492,7 @@
                 spacer.id = "wmd-spacer" + num + postfix;
                 buttonRow.appendChild(spacer);
                 xPosition += 25;
-            }
-
+            };
             buttons.bold = makeButton("wmd-bold-button", getString("bold"), "0px", bindCommand("doBold"));
             buttons.italic = makeButton("wmd-italic-button", getString("italic"), "-20px", bindCommand("doItalic"));
 //            makeSpacer(1);
@@ -1523,14 +1536,14 @@
                 helpButton.title = getString("help");
                 helpButton.onclick = helpOptions.handler;
 
-                setupButton(helpButton, true);
+                setupButton.call(_this, helpButton, true);
 //                buttonRow.appendChild(helpButton);
                 buttons.help = helpButton;
             }
 //			makeSpacer(4);
 			buttons.save = makeButton("wmd-save-button", getString("save"), "-260px", null);
 
-			setUndoRedoButtonStates();
+			setUndoRedoButtonStates.call(_this);
         }
 
         function setUndoRedoButtonStates() {
