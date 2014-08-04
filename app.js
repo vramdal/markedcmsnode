@@ -30,6 +30,7 @@ var jsDAV_Util = require("jsdav/lib/shared/util");
 var fs = require("fs");
 var passport = require('passport');
 var GoogleStrategy = require('passport-google').Strategy;
+var ResourceFetcher = require("./util/resourceFetcher");
 
 
 // New Code
@@ -58,10 +59,12 @@ console.log("jsDAV " + jsDAV_Server.VERSION + " is installed.");
 var jsDAV = require("jsDAV/lib/jsdav");
 // setting debugMode to TRUE outputs a LOT of information to console
 //jsDAV.debugMode = true;
-var jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
-var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
+//var jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
+//var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
 var jsDAV_Auth_Backend_External = require("./jsdav-plugin/AuthPlugin");
+var jsDAV_NonHttpRequest_Plugin = require("./jsdav-plugin/NonHttpRequestPlugin");
 var authBackend = jsDAV_Auth_Backend_External;
+var myResourceFetcher = new ResourceFetcher(jsDAV_NonHttpRequest_Plugin);
 /*
 jsDAV.createServer({
     "node": path.join(siteRootPath),
@@ -71,14 +74,15 @@ jsDAV.createServer({
 
 // From https://gist.github.com/touv/11045459
 var jsDavService = jsDAV.mount({
-    node:           path.join(siteRootPath),
+    node:           siteRootPath,
     mount:          "/",
     server:         app,
     standalone:     false,
-    "locksBackend": locksBackend,
+//    "locksBackend": locksBackend,
     "authBackend": authBackend,
     plugins: jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
-            "bufferResource": require("./jsdav-plugin/BufferResourcePlugin")
+            "bufferResource": require("./jsdav-plugin/BufferResourcePlugin"),
+		    "nonHttpRequest": jsDAV_NonHttpRequest_Plugin
     })
 });
 app.use("/public", express.static(__dirname + "/public"));
@@ -131,6 +135,7 @@ app.all("*",
             req["markedCms"] = {};
             req["markedCms"].siteRootPath = siteRootPath;
             req["markedCms"].templatePath = "templates";
+			req["markedCms"].resourceFetcher = myResourceFetcher;
             return next();
         },
         function(req, res, next) {

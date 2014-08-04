@@ -7,6 +7,8 @@ var jsDAV_iFile = require("../node_modules/jsDAV/lib/DAV/interfaces/iFile");
 
 var mimeTool = require("mime");
 var Resource = require("../util/Resource");
+var streamifier = require("streamifier");
+var globalHandler = null;
 
 var jsDAV_NonHttpRequest_Plugin = module.exports = jsDAV_ServerPlugin.extend({
 	/**
@@ -21,15 +23,14 @@ var jsDAV_NonHttpRequest_Plugin = module.exports = jsDAV_ServerPlugin.extend({
 	 *
 	 * @var jsDAV_Handler
 	 */
-	handler: null,
+//	handler: null,
 
 	initialize: function (handler) {
-		this.handler = handler;
-		handler.addEventListener("beforeMethod", this.httpGetInterceptor.bind(this));
+		globalHandler = handler;
 	},
 
 	getResource: function(path, callback) {
-		this.handler.getNodeForPath(path, function(err, node) {
+		globalHandler.getNodeForPath(path, function(err, node) {
 			if (err) {
 				return callback(err);
 			}
@@ -40,11 +41,14 @@ var jsDAV_NonHttpRequest_Plugin = module.exports = jsDAV_ServerPlugin.extend({
 				if (err) {
 					return callback(err);
 				}
-				node.get(function(err, stringOrStream) {
+				node.get(function(err, streamOrBuffer) {
 					if (err) {
 						return callback(err);
 					}
-					return callback(null, new Resource("/" + path, mimeTool.lookup(path), stringOrStream, size));
+					var stream = (streamOrBuffer instanceof Buffer)
+							? streamifier.createReadStream(streamOrBuffer)
+							: streamOrBuffer;
+					return callback(null, new Resource("/" + path, mimeTool.lookup(path), stream, size));
 				})
 			});
 		});

@@ -4,7 +4,7 @@ var async = require("async");
 var jade = require("jade");
 var http = require("http");
 var merge = require("merge");
-var resourceFetcher = require("../util/resourceFetcher");
+//var resourceFetcher = require("../util/resourceFetcher");
 
 module.exports = function(req, res, next) {
     req["markedCms"].resource.getJSON(function(err, pageSpec) {
@@ -12,6 +12,7 @@ module.exports = function(req, res, next) {
         var templateContent = pageSpec.content;
         var templatePath = "/templates/" + templateName + ".jade";
         var resourcesToFetch = [{identifier: "template" /*templateName*/, path: templatePath}];
+		var resourceFetcher = req["markedCms"].resourceFetcher;
         for (var prop in templateContent) {
             if (templateContent.hasOwnProperty(prop)) {
                 var contentPath = templateContent[prop];
@@ -27,7 +28,7 @@ module.exports = function(req, res, next) {
                 resourcesToFetch.push(fetchObj);
             }
         }
-        async.map(resourcesToFetch, resourceFetcher, function(err, strings) {
+        async.map(resourcesToFetch, resourceFetcher.fetch.bind(resourceFetcher), function(err, strings) {
             if (err) {
                 next(err);
             }

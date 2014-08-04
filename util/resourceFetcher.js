@@ -1,8 +1,11 @@
 var http = require("http");
-var httpsync = require("httpsync");
 var pathTool = require("path");
+function ResourceFetcher(resourceProvider) {
+	this.resourceProvider = resourceProvider;
+}
+module.exports = ResourceFetcher;
 
-module.exports = function(fetchObject, callback) {
+ResourceFetcher.prototype.fetch = function(fetchObject, callback) {
     var headers = fetchObject.headers || {};
     headers["Connection"] = "keep-alive";
     var options = {
@@ -13,6 +16,14 @@ module.exports = function(fetchObject, callback) {
     };
 
     if (callback) {
+		this.resourceProvider.getResource(fetchObject.path, function(err, resource) {
+			if (err) {
+				callback(err);
+			}
+			resource.getString(callback);
+//			callback(null, resource.getString());
+		});
+/*
         http.get(options, function(resp) {
             var string = "";
             resp.on("data", function(chunk) {
@@ -32,7 +43,10 @@ module.exports = function(fetchObject, callback) {
                 callback(null, string);
             });
         });
+*/
     } else {
+		throw new Error("Ingen callback-funksjon");
+/*
         var req = httpsync.get({
             url: "http://" + pathTool.join("127.0.0.1:8080", fetchObject.path),
             headers: headers,
@@ -45,5 +59,6 @@ module.exports = function(fetchObject, callback) {
             return res.data;
         }
 
+*/
     }
 };
