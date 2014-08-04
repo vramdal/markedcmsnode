@@ -14,7 +14,7 @@ module.exports = function(req, res, next) {
             continue;
         }
         var contentPath = resource.compiled.templateContent[prop]["path"];
-        var contentStr = resource.compiled.templateContent[prop]["content"];
+        var contentStr = md(resource.compiled.templateContent[prop]["content"]);
         htmlContents[prop] = {
             "id": contentPath,
             "html": contentStr
