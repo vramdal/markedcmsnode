@@ -90,10 +90,11 @@
     // - run() actually starts the editor; should be called after all necessary plugins are registered. Calling this more than once is a no-op.
     // - refreshPreview() forces the preview to be updated. This method is only available after run() was called.
     Markdown.Editor = function (markdownConverter, textarea, options, polymerElement) {
-        
+
         options = options || {};
 //        doc = owningDoc;
         this.input = textarea;
+        this.commands = {};
         this.polymerElement = polymerElement;
         if (typeof options.handler === "function") { //backwards compatible behavior
             options = { helpButton: options };
@@ -124,15 +125,17 @@
 //                return; // already initialized
 
 //            panels = new PanelCollection(idPostfix);
-            this.commandManager = new CommandManager(hooks, getString);
-            var previewManager = new PreviewManager(markdownConverter, this, function () { hooks.onPreviewRefresh(); });
-            var undoManager;
+            var commandManager = new CommandManager(hooks, getString);
+            var previewManager = new PreviewManager(markdownConverter, this, function (text) {
+                hooks.onPreviewRefresh(text);
+            });
+            var undoManager, uiManager;
 
 //            if (!/\?noundo/.test(doc.location.href)) {
                 undoManager = new UndoManager(function () {
                     previewManager.refresh();
-                    if (this.uiManager) // not available on the first call
-                        this.uiManager.setUndoRedoButtonStates();
+                    if (uiManager) // not available on the first call
+                        uiManager.setUndoRedoButtonStates();
                 }, this);
                 this.textOperation = function (f) {
                     undoManager.setCommandMode();
@@ -141,8 +144,8 @@
                 };
 //            }
 
-            this.uiManager = new UIManager(undefined, this, undoManager, previewManager, this.commandManager, options.helpButton, getString);
-            this.uiManager.setUndoRedoButtonStates();
+            uiManager = new UIManager(undefined, this, undoManager, previewManager, commandManager, options.helpButton, getString);
+            uiManager.setUndoRedoButtonStates();
 
             var forceRefresh = that.refreshPreview = function () { previewManager.refresh(true); };
 
@@ -996,7 +999,7 @@
 
 //            if (panels.preview) {
 //                previewSet(text);
-                previewRefreshCallback();
+                previewRefreshCallback(text);
 //            }
 
 //            setPanelScrollTops();
@@ -1041,9 +1044,9 @@
 
         var background = document.createElement("div"),
             style = background.style;
-        
+
         background.className = "wmd-prompt-background";
-        
+
         style.position = "absolute";
         style.top = "0";
 
@@ -1252,44 +1255,44 @@
 
                 switch (keyCodeStr) {
                     case "b":
-                        this.doClick(buttons.bold);
+                        doClick(buttons.bold);
                         break;
                     case "i":
-                        this.doClick(buttons.italic);
+                        doClick(buttons.italic);
                         break;
                     case "l":
-                        this.doClick(buttons.link);
+                        doClick(buttons.link);
                         break;
                     case "q":
-                        this.doClick(buttons.quote);
+                        doClick(buttons.quote);
                         break;
                     case "k":
-                        this.doClick(buttons.code);
+                        doClick(buttons.code);
                         break;
                     case "g":
-                        this.doClick(buttons.image);
+                        doClick(buttons.image);
                         break;
                     case "o":
-                        this.doClick(buttons.olist);
+                        doClick(buttons.olist);
                         break;
                     case "u":
-                        this.doClick(buttons.ulist);
+                        doClick(buttons.ulist);
                         break;
                     case "h":
-                        this.doClick(buttons.heading);
+                        doClick(buttons.heading);
                         break;
                     case "r":
-                        this.doClick(buttons.hr);
+                        doClick(buttons.hr);
                         break;
                     case "y":
-                        this.doClick(buttons.redo);
+                        doClick(buttons.redo);
                         break;
                     case "z":
                         if (key.shiftKey) {
-                            this.doClick(buttons.redo);
+                            doClick(buttons.redo);
                         }
                         else {
-                            this.doClick(buttons.undo);
+                            doClick(buttons.undo);
                         }
                         break;
                     default:
@@ -1332,7 +1335,7 @@
 
 
         // Perform the button's action.
-        this.doClick = function(button) {
+        function doClick(button) {
 
             inputBox.focus();
 
@@ -1399,9 +1402,10 @@
 //            var highlightYShift = "-40px";
 //            var image = button.getElementsByTagName("span")[0];
 //            this.polymerElement.features[]
-            button.enabled = button.isEnabled == true;
+            button.enabled = isEnabled == true;
+            editor.polymerElement.commands[button.id].enabled = button.enabled;
             if (isEnabled) {
-                button.removeAttribute("disabled");
+//                button.removeAttribute("disabled");
 //                image.style.backgroundPosition = button.XShift + " " + normalYShift;
 //                button.onmouseover = function () {
 //                    image.style.backgroundPosition = this.XShift + " " + highlightYShift;
@@ -1425,17 +1429,19 @@
 //                }
 
                 if (!button.isHelp) {
-                    button.onclick = function () {
+                    button.onclick = editor.polymerElement.commands[button.id].func = function () {
+/*
                         if (this.onmouseout) {
                             this.onmouseout();
                         }
-                        editor.uiManager.doClick(this);
+*/
+                        doClick(this);
                         return false;
                     }
                 }
             }
             else {
-                button.setAttribute("disabled", "");
+//                button.setAttribute("disabled", "");
 //                image.style.backgroundPosition = button.XShift + " " + disabledYShift;
 //                button.onmouseover = button.onmouseout = button.onclick = function () { };
             }
@@ -1463,8 +1469,16 @@
 //            buttonRow = buttonBar.appendChild(buttonRow);
             var xPosition = 0;
             var makeButton = function (id, title, XShift, textOp) {
-                var button = editor.polymerElement.shadowRoot.getElementById(id);
+//                var button = editor.polymerElement.shadowRoot.getElementById(id);
+                var button = document.createElement("li");
                 button.textOp = textOp;
+                editor.polymerElement.commands[id] = {
+                    title: title,
+                    xShift: XShift,
+                    enabled: true,
+                    fakeButton: button,
+                    execute: function() {button.click()}
+                };
 /*
                 button.addEventListener("click", function() {
                     doClick(this);
