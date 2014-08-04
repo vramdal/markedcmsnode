@@ -24,5 +24,9 @@
     "passport": "~0.2.0",
     "passport-google": "~0.3.0",
     "content-type": "0.0.1"
+  },
+  "subdomain": "markedcms",
+  "engines": {
+    "node": "0.10.x"
   }
 }
