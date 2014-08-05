@@ -5,9 +5,106 @@
     <title></title>
     <script src="../../bower_components/platform/platform.js"></script>
     <link rel="import" href="../../bower_components/polymer/polymer.html">
+    <link rel="import" href="../../bower_components/core-icon/core-icon.html">
+    <link rel="import" href="../../bower_components/core-transition/core-transition-css.html">
+    <link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
+    <link rel="import" href="../../bower_components/core-overlay/core-overlay.html">
     <link rel="import" href="markdown-editor.html"/>
 </head>
 <body>
-<markdown-editor rows="20" cols="80"></markdown-editor>
+<polymer-element name="demo-editor">
+    <script>
+        Polymer("demo-editor", {
+            editor: undefined,
+            domReady: function() {
+                this.editor = this.shadowRoot.querySelector("markdown-editor");
+                this.editor.addEventListener("refresh-preview", function(evt) {
+                    this.$["preview"].innerHTML = evt.detail.html;
+                }.bind(this));
+                this.doBold = this.editor.doBold;
+                this.commands = this.editor.commands;
+            },
+            // A bit silly to have to repeat all the editor methods here, but
+            // it is necessary in order to use them as on-click handlers for
+            // buttons in this template.
+            doBold: function() {
+                this.editor.doBold();
+            },
+            doItalic: function() {
+                this.editor.doItalic();
+            },
+            doLink: function() {
+                var url = window.prompt("Enter URL");
+                this.editor.doLink(url);
+            },
+            doImage: function() {
+                var url = window.prompt("Enter URL");
+                this.editor.doImage(url);
+            },
+            doQuote: function() {
+                this.editor.doQuote();
+            },
+            doCode: function() {
+                this.editor.doCode();
+            },
+            doNumberedList: function() {
+                this.editor.doNumberedList();
+            },
+            doBulletList: function() {
+                this.editor.doBulletList();
+            },
+            doHeading: function() {
+                this.editor.doHeading();
+            },
+            doHr: function() {
+                this.editor.doHr();
+            },
+            doUndo: function() {
+                this.editor.doUndo();
+            },
+            doRedo: function() {
+                this.editor.doRedo();
+            }
+        });
+    </script>
+    <template>
+        <core-iconset name="markdown-icons" extends="core-iconset" id="markdown-icons"
+                      src="buttons.png"
+                      width="300"
+                      iconSize="20"
+                      icons="bold italic link quote code image numbered-list bullet-list header rule undo redo help exit spacer"></core-iconset>
+
+        <core-icon-button on-click="{{doBold}}" disabled?={{!commands["wmd-bold-button"].enabled}}  icon="markdown-icons:bold"></core-icon-button>
+        <core-icon-button on-click="{{doItalic}}" disabled?={{!commands["wmd-italic-button"].enabled}}  icon="markdown-icons:italic"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button on-click="{{doLink}}" disabled?={{!commands["wmd-link-button"].enabled}}  icon="markdown-icons:link"></core-icon-button>
+        <core-icon-button on-click="{{doQuote}}" disabled?={{!commands["wmd-quote-button"].enabled}}  icon="markdown-icons:quote"></core-icon-button>
+        <core-icon-button on-click="{{doCode}}" disabled?={{!commands["wmd-code-button"].enabled}}  icon="markdown-icons:code"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <!--<core-icon-button id="wmd-image-button" disabled?={{!commands["wmd-image-button"].enabled}}  icon="markdown-icons:image"></core-icon-button>-->
+        <!--<core-icon icon="markdown-icons:spacer"></core-icon>-->
+        <core-icon-button on-click="{{doNumberedList}}" disabled?={{!commands["wmd-olist-button"].enabled}}  icon="markdown-icons:numbered-list"></core-icon-button>
+        <core-icon-button on-click="{{doBulletList}}" disabled?={{!commands["wmd-ulist-button"].enabled}}  icon="markdown-icons:bullet-list"></core-icon-button>
+        <core-icon-button on-click="{{doHeading}}" disabled?={{!commands["wmd-heading-button"].enabled}}  icon="markdown-icons:header"></core-icon-button>
+        <core-icon-button on-click="{{doHr}}" disabled?={{!commands["wmd-hr-button"].enabled}}  icon="markdown-icons:rule"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button on-click="{{doUndo}}" disabled?={{!commands["wmd-undo-button"].enabled}}  icon="markdown-icons:undo"></core-icon-button>
+        <core-icon-button on-click="{{doRedo}}" disabled?={{!commands["wmd-redo-button"].enabled}}  icon="markdown-icons:redo"></core-icon-button>
+        <core-icon icon="markdown-icons:spacer"></core-icon>
+        <core-icon-button icon="markdown-icons:help"></core-icon-button>
+        <core-icon-button disabled?={{!commands["wmd-save-button"].enabled}}  src="../../components/save-icon.png"></core-icon-button>
+        <br/>
+        <markdown-editor rows="20" cols="80"></markdown-editor>
+        <core-overlay backdrop="true" layered="true" id="link-insert-dialog"
+                      style="background-color: white; padding: 1em" transition="core-transition-center">
+            <h1>Insert link</h1>
+            <input size="100" type="url" autofocus autocomplete/>
+            <button id="okButton">OK</button>
+            <button id="cancelButton" core-overlay-toggle>Cancel</button>
+        </core-overlay>
+        <div id="preview"></div>
+    </template>
+</polymer-element>
+<demo-editor></demo-editor>
 </body>
 </html>

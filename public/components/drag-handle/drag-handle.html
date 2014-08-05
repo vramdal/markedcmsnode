@@ -1,0 +1,89 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<polymer-element name="drag-handle" attributes="draggableId">
+    <script type="text/javascript" src="../../javascripts/polyfills.js"></script>
+    <script>
+        Polymer('drag-handle', {
+            draggableId: undefined,
+            publish: {
+                  dragTarget: undefined
+            },
+            dragTargetChanged: function() {
+                console.log("Drag target changed");
+            },
+            domReady: function() {
+                var _this = this;
+                console.log("Drag handle ready");
+                var thisShadowRoot = this.shadowRoot;
+                var parentFragment = thisShadowRoot.getParentFragment();
+                if (this.dragTarget == undefined) {
+                    if (this.draggableId == ":host") {
+                        this.dragTarget = parentFragment.host;
+                    } else if (this.draggableId) {
+                        this.dragTarget = parentFragment.getElementById(this.draggableId);
+                    } else {
+                        this.dragTarget = this.shadowRoot.host.parentElementAcrossDocumentFragments();
+                    }
+                }
+                var dragHandle = this.$["draghandle"];
+                dragHandle.addEventListener("mousedown", function(evt) {
+                    evt.preventDefault();
+                    dragHandle.isDragging = true;
+                    dragHandle.style.cursor = "move";
+                    var mouseStartPos = {
+                        left: evt.clientX,
+                        top: evt.clientY
+                    };
+                    _this.dragTarget.style.position = "fixed";
+                    var targetRect = _this.dragTarget.getBoundingClientRect();
+                    var targetStartPos = _this.dragTarget.absolutePosition(null, false);
+                    var mouseMoveListener = function (evt) {
+                        if (!dragHandle.isDragging) {
+                            return true;
+                        }
+                        if (evt.clientY < 0 || evt.clientX < 0) {
+                            return true;
+                        }
+                        var hasMoved = {
+                            left: evt.clientX - mouseStartPos.left,
+                            top: evt.clientY - mouseStartPos.top
+                        };
+                        var newPosition = {
+                            left: (targetStartPos.left + hasMoved.left),
+                            top:  (targetStartPos.top + hasMoved.top)
+                        };
+                        _this.dragTarget.style.position = "absolute";
+                        _this.dragTarget.style.left = newPosition.left + "px";
+                        _this.dragTarget.style.top = newPosition.top + "px";
+                        _this.dragTarget.style.opacity = '0.4';
+    
+                    };
+                    var endDragListener = function (evt) {
+                        evt.preventDefault();
+                        document.removeEventListener("mouseup", endDragListener);
+                        document.removeEventListener("mousemove", mouseMoveListener);
+                        if (dragHandle.isDragging) {
+                            delete dragHandle.isDragging;
+                        }
+                        if (dragHandle.isMoving) {
+                            delete dragHandle.isMoving;
+                        }
+                        _this.dragTarget.style.opacity = '';
+                        dragHandle.style.cursor = "";
+                    };
+                    document.addEventListener("mouseup", endDragListener);
+                    document.addEventListener("mousemove", mouseMoveListener);
+    
+                }, false);
+            }
+
+        });
+    </script>
+    <template>
+        <style>
+            #draghandle {
+                cursor: move;
+            }
+        </style>
+        <span id="draghandle"><content></content></span>
+    </template>
+</polymer-element>

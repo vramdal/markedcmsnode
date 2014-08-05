@@ -1,16 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<core-iconset name="markdown-icons" extends="core-iconset" id="markdown-icons"
-                 src="buttons.png"
-                 width="300"
-                 iconSize="20"
-        icons="bold italic link quote code image numbered-list bullet-list header rule undo redo help exit spacer">
     <!--<property theme="disabled" offsetY="20"></property>-->
 </core-iconset>
 <polymer-element name="markdown-editor" attributes="rows cols resize">
-    <link rel="import" href="../../bower_components/core-icon/core-icon.html">
-    <link rel="import" href="../../bower_components/core-transition/core-transition-css.html">
-    <link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
-    <link rel="import" href="../../bower_components/core-overlay/core-overlay.html">
     <script type="text/javascript" src="./lib/pagedown/Markdown.Converter.js"></script>
     <script type="text/javascript" src="./lib/pagedown/Markdown.Sanitizer.js"></script>
     <script type="text/javascript" src="Markdown.Editor.js"></script>
@@ -156,15 +147,6 @@
             },
             doRedo: function() {
                 this.commands["wmd-redo-button"].execute();
-            },
-            showInsertLinkDialog: function() {
-                this.$["link-insert-dialog"].open();
-            },
-            insertLink: function() {
-                var dialog = this.$["link-insert-dialog"];
-                var url = dialog.querySelector("input").value;
-                console.log(url);
-                dialog.close();
             }
         });
     </script>
@@ -174,34 +156,8 @@
                 resize: {{resize}};
             }
         </style>
-        <core-icon-button on-click="{{doBold}}" disabled?={{!commands["wmd-bold-button"].enabled}}  icon="markdown-icons:bold"></core-icon-button>
-        <core-icon-button on-click="{{doItalic}}" disabled?={{!commands["wmd-italic-button"].enabled}}  icon="markdown-icons:italic"></core-icon-button>
-        <core-icon icon="markdown-icons:spacer"></core-icon>
-        <core-icon-button on-click="{{insertLink}}" disabled?={{!commands["wmd-link-button"].enabled}}  icon="markdown-icons:link"></core-icon-button>
-        <core-icon-button on-click="{{doQuote}}" disabled?={{!commands["wmd-quote-button"].enabled}}  icon="markdown-icons:quote"></core-icon-button>
-        <core-icon-button on-click="{{doCode}}" disabled?={{!commands["wmd-code-button"].enabled}}  icon="markdown-icons:code"></core-icon-button>
-        <core-icon icon="markdown-icons:spacer"></core-icon>
-        <!--<core-icon-button id="wmd-image-button" disabled?={{!commands["wmd-image-button"].enabled}}  icon="markdown-icons:image"></core-icon-button>-->
-        <!--<core-icon icon="markdown-icons:spacer"></core-icon>-->
-        <core-icon-button on-click="{{doNumberedList}}" disabled?={{!commands["wmd-olist-button"].enabled}}  icon="markdown-icons:numbered-list"></core-icon-button>
-        <core-icon-button on-click="{{doBulletList}}" disabled?={{!commands["wmd-ulist-button"].enabled}}  icon="markdown-icons:bullet-list"></core-icon-button>
-        <core-icon-button on-click="{{doHeading}}" disabled?={{!commands["wmd-heading-button"].enabled}}  icon="markdown-icons:header"></core-icon-button>
-        <core-icon-button on-click="{{doHr}}" disabled?={{!commands["wmd-hr-button"].enabled}}  icon="markdown-icons:rule"></core-icon-button>
-        <core-icon icon="markdown-icons:spacer"></core-icon>
-        <core-icon-button on-click="{{doUndo}}" disabled?={{!commands["wmd-undo-button"].enabled}}  icon="markdown-icons:undo"></core-icon-button>
-        <core-icon-button on-click="{{doRedo}}" disabled?={{!commands["wmd-redo-button"].enabled}}  icon="markdown-icons:redo"></core-icon-button>
-        <core-icon icon="markdown-icons:spacer"></core-icon>
-        <core-icon-button icon="markdown-icons:help"></core-icon-button>
-        <core-icon-button disabled?={{!commands["wmd-save-button"].enabled}}  src="../../components/save-icon.png"></core-icon-button>
-        <br/>
+
         <textarea rows="{{rows}}" cols="{{cols}}"></textarea>
         <div id="preview"></div>
-        <core-overlay backdrop="true" layered="true" id="link-insert-dialog"
-                      style="background-color: white; padding: 1em" transition="core-transition-center">
-            <h1>Insert link</h1>
-            <input size="100" type="url" autofocus autocomplete/>
-            <button id="okButton">OK</button>
-            <button id="cancelButton" core-overlay-toggle>Cancel</button>
-        </core-overlay>
     </template>
 </polymer-element>

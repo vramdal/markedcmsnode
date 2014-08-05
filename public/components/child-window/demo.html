@@ -11,7 +11,7 @@
             console.log("Called back:", evt);
         }
         window.addEventListener("load", function() {
-            var dialog = document.querySelector("modal-dialog");
+            var dialog = document.querySelector("child-window");
             dialog.addEventListener("close", handleCallback);
         });
     </script>

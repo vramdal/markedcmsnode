@@ -1,0 +1,66 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../components/child-window/child-window.html">
+<polymer-element name="dialog-window" extends="child-window">
+    <script>
+        Polymer('dialog-window', {
+            okButton: true,
+            cancelButton: true,
+            defaultButtonId: undefined,
+            defaultButton: undefined,
+            buttonClicked: undefined,
+            autoCloseDisabled: true,
+            callback: function() {},
+            buttonClickHandler: function(evt) {
+                this.buttonClicked = evt.target;
+                if (evt.target.hasAttribute("dialog-close")) {
+                    this.close();
+                }
+            },
+            domReady: function() {
+                this.super();
+                var dialog = this.shadowRoot.host;
+                this.defaultButton = this.defaultButtonId != undefined
+                        ? this.$[this.defaultButtonId] :
+                        this.shadowRoot.querySelector("button");
+                this.cancelButton = this.shadowRoot.querySelector("button[name='cancel']");
+                var _this = this;
+                var dialogCloseListener = function (evt) {
+                    console.log("Dialog state: ", evt.detail);
+                    if (!(evt.detail === true)) {
+                        if (!_this.buttonClicked && _this.cancelButton) {
+                            _this.buttonClicked = _this.cancelButton;
+                        }
+                        dialog.fire("close", {button: _this.buttonClicked.name || _this.buttonClicked.id});
+                    }
+                };
+                dialog.addEventListener("core-overlay-open", dialogCloseListener);
+                Array.prototype.slice.call(this.shadowRoot.querySelectorAll("button")).forEach(function(button) {
+                    button.addEventListener("click", _this.buttonClickHandler.bind(_this));
+                });
+                if (dialog.querySelectorAll("input").length == 1) {
+                    dialog.querySelector("input").onkeypress = function (evt) {
+                        if (evt.keyCode == 13) {
+                            if (_this.defaultButton) {
+                                evt.preventDefault();
+                                _this.defaultButton.click();
+                                return false;
+                            }
+                        }
+                        return true;
+                    };
+                }
+            }
+        });
+    </script>
+    <template>
+        <style>
+        </style>
+        <shadow></shadow>
+        <template if="{{okButton}}">
+            <button id="okButton" type="button" name="ok" dialog-close>OK</button>
+        </template>
+        <template if="{{cancelButton}}">
+            <button id="cancelButton" type="button" name="cancel" dialog-close>Cancel</button>
+        </template>
+    </template>
+</polymer-element>

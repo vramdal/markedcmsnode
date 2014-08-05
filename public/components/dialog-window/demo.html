@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="../../bower_components/platform/platform.js"></script>
+    <link rel="import" href="../../bower_components/polymer/polymer.html">
+    <link rel="import" href="dialog-window.html"/>
+    <script>
+        function handleCallback(evt) {
+            console.log("Called back:", evt);
+        }
+        window.addEventListener("load", function() {
+            var dialog = document.querySelector("dialog-window");
+            dialog.addEventListener("close", handleCallback);
+        });
+    </script>
+</head>
+<body>
+<button onclick="document.querySelector('dialog-window').open()">Open</button>
+<dialog-window title="Min dialog" cancelButton="true" movable="true">
+    Dato: <input type="date"/>
+</dialog-window>
+</body>
+</html>
