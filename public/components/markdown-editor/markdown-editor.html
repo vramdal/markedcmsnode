@@ -104,7 +104,31 @@
                 this.textarea.value = value;
             },
             doBold: function() {
-                this.shadowRoot.getElementById("wmd-bold-button").click();
+                this.commands["wmd-bold-button"].execute();
+            },
+            doItalic: function() {
+                this.commands["wmd-italic-button"].execute();
+            },
+            doLink: function() {
+                this.commands["wmd-link-button"].execute();
+            },
+            doQuote: function() {
+                this.commands["wmd-quote-button"].execute();
+            },
+            doCode: function() {
+                this.commands["wmd-code-button"].execute();
+            },
+            doNumberedList: function() {
+                this.commands["wmd-olist-button"].execute();
+            },
+            doBulletList: function() {
+                this.commands["wmd-ulist-button"].execute();
+            },
+            doUndo: function() {
+                this.commands["wmd-undo-button"].execute();
+            },
+            doRedo: function() {
+                this.commands["wmd-redo-button"].execute();
             },
             showInsertLinkDialog: function() {
                 this.$["link-insert-dialog"].open();
