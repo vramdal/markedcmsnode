@@ -26,7 +26,7 @@ var markdownContentCompiler = require("./routes/markdownContentCompiler");
 require("./util/polyfills");
 var siteRootPath = process.env["filePersistence.rootDir"];
 var responseProxy = require('./util/responseProxy');
-var jsDAV_Util = require("jsdav/lib/shared/util");
+var jsDAV_Util = require("jsDAV/lib/shared/util");
 var fs = require("fs");
 var passport = require('passport');
 var GoogleStrategy = require('passport-google').Strategy;

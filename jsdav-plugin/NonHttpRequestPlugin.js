@@ -1,5 +1,6 @@
-var jsDAV_ServerPlugin = require("../node_modules/jsDAV/lib/dav/plugin");
 var Path = require("path");
+var jsdav = require("jsDAV/lib/jsdav");
+var jsDAV_ServerPlugin = require("../node_modules/jsDAV/lib/DAV/plugin");
 var Url = require("url");
 var Util = require("../node_modules/jsDAV/lib/shared/util");
 var jsDAV_iFile = require("../node_modules/jsDAV/lib/DAV/interfaces/iFile");
