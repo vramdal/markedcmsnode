@@ -1451,7 +1451,7 @@
         function bindCommand(method) {
             if (typeof method === "string")
                 method = commandManager[method];
-            return function () { method.apply(commandManager, arguments); }
+            return function () { return /* VSR */ method.apply(commandManager, arguments); }
         }
 
         function makeSpritedButtonRow() {
@@ -1830,6 +1830,7 @@
             else {
                 if (!this.hooks.insertLinkDialog(linkEnteredCallback))
                    ui.prompt(this.getString("linkdialog"), linkDefaultText, linkEnteredCallback);
+
             }
             return true;
         }

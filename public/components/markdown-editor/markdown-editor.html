@@ -42,6 +42,11 @@
                     _this.asyncFire("refresh-preview", {html: text});
                 });
                 this.editor.hooks.set("insertLinkDialog", function (callback) {
+                    if (_this.insertingUrl) {
+                        callback(_this.insertingUrl);
+                        _this.insertingUrl = undefined;
+                        return true;
+                    }
                     var dialog = _this.$["link-insert-dialog"];
                     var dialogCloseListener = function (evt) {
                         console.log("Dialog state: ", evt.detail);
@@ -70,6 +75,13 @@
                     dialog.okButtonClicked = false;
                     dialog.open();
                     return true;
+                });
+                this.editor.hooks.set("insertImageDialog", function (callback) {
+                    if (_this.insertingUrl) {
+                        callback(_this.insertingUrl);
+                        _this.insertingUrl = undefined;
+                        return true;
+                    }
                 });
 
                 this.editor.run();
@@ -109,8 +121,17 @@
             doItalic: function() {
                 this.commands["wmd-italic-button"].execute();
             },
-            doLink: function() {
+            doLink: function(url) {
+                if (url) {
+                    this.insertingUrl = url;
+                }
                 this.commands["wmd-link-button"].execute();
+            },
+            doImage: function(url) {
+                if (url) {
+                    this.insertingUrl = url;
+                }
+                this.commands["wmd-image-button"].execute();
             },
             doQuote: function() {
                 this.commands["wmd-quote-button"].execute();
