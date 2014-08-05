@@ -8,7 +8,9 @@
 </core-iconset>
 <polymer-element name="markdown-editor" attributes="rows cols resize">
     <link rel="import" href="../../bower_components/core-icon/core-icon.html">
+    <link rel="import" href="../../bower_components/core-transition/core-transition-css.html">
     <link rel="import" href="../../bower_components/core-icon-button/core-icon-button.html">
+    <link rel="import" href="../../bower_components/core-overlay/core-overlay.html">
     <script type="text/javascript" src="./lib/pagedown/Markdown.Converter.js"></script>
     <script type="text/javascript" src="./lib/pagedown/Markdown.Sanitizer.js"></script>
     <script type="text/javascript" src="Markdown.Editor.js"></script>
@@ -39,6 +41,37 @@
 //                    _this.asyncFire("refresh-preview", message);
                     _this.asyncFire("refresh-preview", {html: text});
                 });
+                this.editor.hooks.set("insertLinkDialog", function (callback) {
+                    var dialog = _this.$["link-insert-dialog"];
+                    var dialogCloseListener = function (evt) {
+                        console.log("Dialog state: ", evt.detail);
+                        if (!(evt.detail === true)) {
+                            dialog.removeEventListener("core-overlay-open", dialogCloseListener);
+                            if (dialog.okButtonClicked) {
+                                callback(dialog.querySelector("input").value);
+                            } else {
+                                callback(null);
+                            }
+                        }
+                    };
+                    dialog.addEventListener("core-overlay-open", dialogCloseListener);
+                    dialog.querySelector("#okButton").onclick = function() {
+                        dialog.okButtonClicked = true;
+                        dialog.close();
+                    };
+                    dialog.querySelector("input").onkeypress = function(evt) {
+                        if (evt.keyCode == 13) {
+                            evt.preventDefault();
+                            dialog.querySelector("#okButton").click();
+                            return false;
+                        }
+                        return true;
+                    };
+                    dialog.okButtonClicked = false;
+                    dialog.open();
+                    return true;
+                });
+
                 this.editor.run();
                 Array.prototype.slice.call(this.shadowRoot.querySelectorAll("core-icon-button")).forEach(function(button) {
                     if (_this.commands[button.id]) {
@@ -72,6 +105,15 @@
             },
             doBold: function() {
                 this.shadowRoot.getElementById("wmd-bold-button").click();
+            },
+            showInsertLinkDialog: function() {
+                this.$["link-insert-dialog"].open();
+            },
+            insertLink: function() {
+                var dialog = this.$["link-insert-dialog"];
+                var url = dialog.querySelector("input").value;
+                console.log(url);
+                dialog.close();
             }
         });
     </script>
@@ -104,5 +146,12 @@
         <textarea rows="{{rows}}" cols="{{cols}}">
         </textarea>
         <div id="preview"></div>
+        <core-overlay backdrop="true" layered="true" id="link-insert-dialog"
+                      style="background-color: white; padding: 1em" transition="core-transition-center">
+            <h1>Insert link</h1>
+            <input size="100" type="url" autofocus autocomplete/>
+            <button id="okButton">OK</button>
+            <button id="cancelButton" core-overlay-toggle>Cancel</button>
+        </core-overlay>
     </template>
 </polymer-element>
