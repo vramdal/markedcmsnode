@@ -1,0 +1,87 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/core-overlay/core-overlay.html">
+<link rel="import" href="../draghandle.html"/>
+<!--<script type="text/javascript" src="../../javascripts/polyfills.js"></script>-->
+<polymer-element name="child-window" attributes="title okButton cancelButton backdrop movable defaultButtonId"
+                 extends="core-overlay">
+    <script>
+        Polymer("child-window", {
+            title: "Child window",
+            okButton: true,
+            cancelButton: true,
+            backdrop: true,
+            movable: false,
+            defaultButtonId: undefined,
+            defaultButton: undefined,
+            buttonClicked: undefined,
+            autoCloseDisabled: true,
+            callback: function() {},
+            buttonClickHandler: function(evt) {
+                this.buttonClicked = evt.target;
+                if (evt.target.hasAttribute("dialog-close")) {
+                    this.close();
+                }
+            },
+            domReady: function() {
+                this.super();
+                var dialog = this.shadowRoot.host;
+                this.defaultButton = this.defaultButtonId != undefined
+                        ? this.$[this.defaultButtonId] :
+                        this.shadowRoot.querySelector("button");
+                this.cancelButton = this.shadowRoot.querySelector("button[name='cancel']");
+                var _this = this;
+                var dialogCloseListener = function (evt) {
+                    console.log("Dialog state: ", evt.detail);
+                    if (!(evt.detail === true)) {
+                        if (!_this.buttonClicked && _this.cancelButton) {
+                            _this.buttonClicked = _this.cancelButton;
+                        }
+                        dialog.fire("close", {button: _this.buttonClicked.name || _this.buttonClicked.id});
+                    }
+                };
+                dialog.addEventListener("core-overlay-open", dialogCloseListener);
+                Array.prototype.slice.call(this.shadowRoot.querySelectorAll("button")).forEach(function(button) {
+                    button.addEventListener("click", _this.buttonClickHandler.bind(_this));
+                });
+                if (dialog.querySelectorAll("input").length == 1) {
+                    dialog.querySelector("input").onkeypress = function (evt) {
+                        if (evt.keyCode == 13) {
+                            if (_this.defaultButton) {
+                                evt.preventDefault();
+                                _this.defaultButton.click();
+                                return false;
+                            }
+                        }
+                        return true;
+                    };
+                }
+            }
+        });
+    </script>
+    <template>
+        <style>
+            :host {
+                border: outset;
+                background-color: #ffffff;
+                color: black;
+                padding: 1em;
+            }
+        </style>
+        <template if="{{movable}}">
+            <mdcms-draghandle draggableId=":host"><h1 id="dragHandle">{{title}}</h1></mdcms-draghandle>
+        </template>
+        <template if="{{!movable}}">
+            <h1>{{title}}</h1>
+        </template>
+
+        <shadow>
+        </shadow>
+        <template if="{{okButton}}">
+            <button id="okButton" type="button" name="ok" dialog-close>OK</button>
+        </template>
+        <template if="{{cancelButton}}">
+            <button id="cancelButton" type="button" name="cancel" dialog-close>Cancel</button>
+        </template>
+    </template>
+
+</polymer-element>
