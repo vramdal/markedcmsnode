@@ -8,7 +8,6 @@ var routes = require('./routes');
 var user = require('./routes/user');
 var assetsRoute = require('./routes/assets');
 var rawRoute = require('./routes/raw');
-var image = require('./routes/image');
 var http = require('http');
 var path = require('path');
 var persistence = require('./persistence/' + process.env["persistence"]);
@@ -73,8 +72,9 @@ jsDAV.createServer({
 */
 
 // From https://gist.github.com/touv/11045459
+var repositoryRoot = path.join(__dirname, siteRootPath);
 var jsDavService = jsDAV.mount({
-    node:           siteRootPath,
+    node: repositoryRoot,
     mount:          "/",
     server:         app,
     standalone:     false,
@@ -86,10 +86,13 @@ var jsDavService = jsDAV.mount({
     })
 });
 app.use("/public", express.static(__dirname + "/public"));
-
+app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
+app.set("hostname", process.env.HOSTNAME || "localhost");
+var port = app.get("port") ? app.get("port") : 80;
+var portStr = port == 80 ? "" : ":" + port;
 passport.use(new GoogleStrategy({
-            returnURL: "http://localhost:8080/auth/google/return",
-            realm: "http://localhost:8080"
+            returnURL: "http://" + app.get("hostname") + portStr + "/auth/google/return",
+            realm: "http://" + app.get("hostname") + portStr
         },
         function(identifier, profile, done) {
             console.log("Google", identifier);
@@ -197,7 +200,6 @@ app.use(function (req, res, next) {
 
 
 // all environments
-app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -219,8 +221,6 @@ app.get('/', routes.index);
 //app.use('/userlist', routes.userlist(persistence));
 // Se http://stackoverflow.com/a/15663862/253907
 app.post("/assets", assetsRoute.upload(persistence));
-//app.get(/^\/assets\/(.*?)\/(\d*)x(\d*)$/, image.imageResize(persistence));
-//app.get(/^\/assets\/(.+?)\/sizes$/, image.suitableSizes(persistence));
 app.use("/assets", express.static(__dirname + "/../assets"));
 //app.all(/^\/content\/(.+)$/, routes.content(persistence));
 
@@ -273,6 +273,6 @@ process.on('uncaughtException', function(err) {
 });
 
 http.createServer(app).listen(app.get('port'), function(){
-    console.log("Express server listening on port %d in %s mode", app.get("port"), app.settings.env);
-	console.log("jsDAV repository on " + siteRootPath);
+    console.log("Express server listening on port %d in %s mode", port, app.settings.env);
+	console.log("jsDAV repository on " + repositoryRoot);
 });
