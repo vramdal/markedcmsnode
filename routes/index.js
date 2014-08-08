@@ -37,9 +37,9 @@ function output(req, res) {
 }
 
 /*
-exports.content = function(db) {
+exports.content = function(dbConnection) {
 	return function(req, res) {
-		var collection = db.get("contentcollection");
+		var collection = dbConnection.get("contentcollection");
 		if (req.method == "GET") {
 */
 /*

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="jsonPath.js"></script>
+    <script type="text/javascript">
+        window.addEventListener("load", function() {
+            document.querySelector("input[type='text']").addEventListener("keypress", function(evt) {
+                if (evt.keyCode != 13) {
+                    return true;
+                }
+                try {
+                    window.json = JSON.parse(document.querySelector("textarea").value);
+                } catch (e) {
+                    console.error("Parse error: ", e);
+                    return;
+                }
+                var result = jsonPath(window.json, document.querySelector("input[type='text']").value);
+                console.log(result);
+            });
+        });
+    </script>
+</head>
+<body>
+<input type="text" size="80" value="/fisk" placeholder="Path" autocomplete="true"/><br/>
+<textarea rows="40" cols="80" placeholder="JSON">
+    {
+      "fisk": {
+        "torsk": {
+          "skrei": true,
+          "targjedd": false
+       },
+       "sei": {"pale": false},
+       "laks": {"vill": true, "oppdrett": false}
+      }
+    }
+</textarea>
+</body>
+</html>

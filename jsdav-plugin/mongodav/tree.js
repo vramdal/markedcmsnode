@@ -10,7 +10,7 @@
 var jsDAV_Tree = require("./../../node_modules/jsDAV/lib/DAV/tree");
 var jsDAV_FS_Directory = require("./../../node_modules/jsDAV/lib/DAV/directory");
 var jsDAV_FS_File = require("./../../node_modules/jsDAV/lib/DAV/file");
-var mongo = require("mongodb");
+var mongojs = require("mongojs");
 
 var Fs = require("fs");
 var Async = require("asyncjs");
@@ -28,12 +28,28 @@ var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
  */
 var jsDAV_Tree_Filesystem = module.exports = jsDAV_Tree.extend({
 
-	setDb: function(db) {
-		this.db = db;
+	db: undefined, // mongojs
+
+	setDbConnection: function(dbConnection) {
+		this.db = dbConnection;
 	},
 
 	initialize: function (basePath) {
 		this.basePath = basePath;
+	},
+
+	jsonPath: function(root, path) {
+		var reg = /\/([^\/]+)(.*)/;
+		var results = reg.exec(path);
+		var propertyName = results[1];
+		var rest = results[2];
+		if (root[propertyName] && rest) {
+			return this.jsonPath(root[propertyName], rest);
+		} else if (root[propertyName]) {
+			return root[propertyName];
+		} else {
+			return null;
+		}
 	},
 
 	/**
@@ -44,6 +60,19 @@ var jsDAV_Tree_Filesystem = module.exports = jsDAV_Tree.extend({
 	 * @return void
 	 */
 	getNodeForPath: function (path, cbfstree) { // TODO
+		var contentCollection = this.db.collection("content");
+		var parts = path.split("/");
+		contentCollection.findOne({_id:mongojs.ObjectId("structure")}, function(err, structure) {
+			if (err) {
+				throw err;
+			}
+			jsonPath(structure, path); // TODO
+		});
+
+		contentCollection.find()
+		this.db.find().toArray(function(err, results) {
+
+		});
 
 		Fs.stat(realPath, function (err, stat) {
 
