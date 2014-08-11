@@ -24,86 +24,24 @@ var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
  * Supply the path you'd like to share.
  *
  * @param {String} basePath
+ * @param {MongoDB collection} collection
  * @contructor
  */
 var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
 
-    initialize: function (basePath, db) {
+    initialize: function (basePath, mc) {
         this.basePath = basePath;
-        this.db = db;
+        this.mc = mc; // mc: MongoDB collection
     },
 
-    jsonPath: function(root, path, closestMatch, accumulatedPath) { // BROKEN: Funker ikke med datamodellen
-        var reg = /\/([^\/]+)(.*)/;
-        var results = reg.exec(path);
-        if (path == "/") {
-            return {
-                match: root,
-                path: path
-            }
-        }
-        var propertyName = results[1];
-        accumulatedPath = accumulatedPath || "";
-        accumulatedPath = accumulatedPath + "/" + propertyName ;
-        var rest = results[2];
-        if (root[propertyName] && rest) {
-            return this.jsonPath(root[propertyName], rest, accumulatedPath);
-        } else if (root[propertyName]) {
-            return {
-                match: root[propertyName],
-                path: accumulatedPath
-            }
-        } else {
-            return {
-                closestMatch: root,
-                path: accumulatedPath,
-                rest: rest
-            }
-        }
-    },
-    getStructure: function(callback) {
-        this.db.structure.find({"_id": "structure"}, function(err, structureNode) {
-            callback(null, structureNode);
-        });
-    },
-
-    getRootNode: function(callback) {
+    getChildrenForNode: function(parent, cbfschildren) {
         var _this = this;
-        this.getStructure(function(err, structureNode) {
-            callback(null, jsDAV_Mongo_Directory.new("/", _this.db))
-        });
-    },
-
-    getChildrenForPage: function(parentPage, cbfschildren) {
-        var _this = this;
-        var parentPath = (parentPage.path == "/" ? "" : parentPage.path);
-        parentPath = parentPath.replace("/", "\\/");
+        var parentPath = (parent.path == "/" ? "" : parent.path).replace("/", "\\/");
+//        parentPath = parentPath.replace("/", "\\/");
         var reg = new RegExp("^" + ( parentPath) + "\/[^\/]+$");
-        async.parallel([
-                    function(callback) {
-                        var pagesArr = [];
-                        _this.db.pages.find({"path": reg}, function(err, pages) {
-                            for (var i = 0; i < pages.length; i++) {
-                                var page = pages[i];
-                                pagesArr.push(jsDAV_Mongo_Directory.new(page.path, page, _this));
-                            }
-                            return callback(err, pagesArr);
-                        });
-                    },
-                    function(callback) {
-                        var contentArr = [];
-                        _this.db.content.find({"pageId": parentPage._id}, function(err, contentDocs) {
-                            for (var i = 0; i < contentDocs.length; i++) {
-                                var contentDoc = contentDocs[i];
-                                contentArr.push(jsDAV_Mongo_File.new((parentPage.path == "/" ? "/" : parentPage.path + "/") + contentDoc.name, contentDoc));
-                            }
-                            return callback(err, contentArr);
-                        });
-                    }
-                ],
-                function(err, results) {
-                    return cbfschildren(err, results[0].concat(results[1]));
-                });
+        this.mc.find({"path": reg}, function(err, documents) {
+            async.map(documents, _this.getNodeForDocument, cbfschildren);
+        });
     },
     /**
      * Returns a new node for the given path
@@ -115,63 +53,38 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
     getNodeForPath: function (path, cbfstree) {
         var _this = this;
         path = path.indexOf("/") != 0 ? "/" + path : path;
-        var page = undefined;
-        async.series([
-                    function(callback) {
-                        _this.db.pages.findOne({"path": path}, function(err, foundPage) {
-                            page = foundPage;
-                            return callback(err, foundPage);
-                        })
-                    },
-                    function(callback) {
-                        if (!page) {
-                            var parentPagePath;
-                            if (path.lastIndexOf("/") == 0) {
-                                parentPagePath = "/";
-                            } else {
-                               parentPagePath = path.substring(0, path.lastIndexOf("/"));
-                            }
-                            _this.db.pages.findOne({"path": parentPagePath}, function(err, foundPage) {
-                                page = foundPage;
-                                return callback(err, foundPage);
-                            });
-                        } else {
-                            return callback(null, null);
-                        }
-                    },
-                    function(callback) {
-                        if (page && page.path != path) {
-/*
-                            var parentPagePath;
-                            if (path.lastIndexOf("/") == 0) {
-                                parentPagePath = "/";
-                            } else {
-                               parentPagePath = path.substring(path.lastIndexOf("/") + 1);
-                            }
-*/
-                            var filename = path.substring(page.path == "/" ? 1 : page.path.length + 1);
-                            _this.db.content.findOne({"pageId": page._id, "name": filename}, function(err, foundContent) {
-                                return callback(err, foundContent);
-                            });
-                        } else {
-                            return callback(null, null);
-                        }
-                    }
-                ],
-                function(err, results) {
-                    var foundContent = results[2];
-                    var page = results[0] || results[1];
-                    if (err) {
-                        return cbfstree(err);
-                    } else if (foundContent) { // Content
-                        return cbfstree(err, jsDAV_Mongo_File.new((page.path == "/" ? "/" : page.path  + "/") + foundContent.name, foundContent, _this));
-                    } else if (results[0]) { // Page
-                        return cbfstree(err, jsDAV_Mongo_Directory.new(page.path, page, _this));
-                    } else { // Nothing
-                        return cbfstree(new Exc.FileNotFound("File at location " + path + " not found"));
-                    }
-                }
-        );
+        this.mc.findOne({"path": path}, function(err, found) {
+            if (err) {
+                return cbfstree(err);
+            }
+            if (!found) {
+                return cbfstree(new Exc.FileNotFound("File at location " + path + " not found"));
+            }
+            return _this.getNodeForDocument(found, cbfstree);
+        });
+    },
+
+    /**
+     * Returns a new node for the given MongoDB document
+     * @param document A MongoDB document
+     * @param {Function} callback
+     * @returns {void}
+     */
+    getNodeForDocument: function(document, callback) {
+        var clazz = undefined;
+        switch (document.resourceType) {
+            case "page": clazz = jsDAV_Mongo_Directory; break;
+            case "folder": clazz = jsDAV_Mongo_Directory; break;
+            case "content": clazz = jsDAV_Mongo_File; break;
+            case "template": clazz = jsDAV_Mongo_File; break;
+        }
+        var result;
+        if (clazz) {
+            result = clazz.new(document.path, document, this);
+            return callback(null, result);
+        } else {
+            return callback(new Exc.NotImplemented("File at " + path + " + has resource type " + document.resourceType + " which is not supported"));
+        }
     },
 
     /**

@@ -187,6 +187,6 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      * @return mixed
      */
     getContentType: function(cbfsmime) {
-        return cbfsmime(null, mime.lookup(this.contentDoc.name, "application/octet-stream"));
+        return cbfsmime(null, mime.lookup(this.contentDoc.path, "application/octet-stream"));
     }
 });

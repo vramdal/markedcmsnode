@@ -30,6 +30,8 @@ var fs = require("fs");
 var passport = require('passport');
 var GoogleStrategy = require('passport-google').Strategy;
 var ResourceFetcher = require("./util/resourceFetcher");
+var async = require("async");
+
 
 
 // New Code
@@ -73,26 +75,66 @@ jsDAV.createServer({
 
 // From https://gist.github.com/touv/11045459
 var mongojs = require("mongojs");
-var db = mongojs("markedcms", ["structure", "content", "pages", "templates"]);
+var db = mongojs(process.env["mongoConnectString"], ["content"]);
+
+var jsDavService;
+var collection = undefined;
+var initJsDav = function(err, collection) {
+    if (err) {
+        console.error(err);
+        return;
+    }
+    var jsDAV_Mongo_Tree = require("./jsdav-plugin/mongodav/jsDAV_Mongo_Tree").new("/", collection);
+    jsDavService = jsDAV.mount({
+        //    node: repositoryRoot,
+        tree:          jsDAV_Mongo_Tree,
+        mount:         "/",
+        server:        app,
+        standalone:    false,
+        //    "locksBackend": locksBackend,
+        "authBackend": authBackend,
+        plugins:       jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
+            "bufferResource": require("./jsdav-plugin/BufferResourcePlugin"),
+            "nonHttpRequest": jsDAV_NonHttpRequest_Plugin
+        })
+    });
+};
+
+db.getCollectionNames(function(err, collectionNames) {
+    for (var i = 0; i < collectionNames.length; i++) {
+        var collectionName = collectionNames[i];
+        if (collectionName == "content") {
+            collection = db["content"];
+            return initJsDav(null, collection);
+        }
+    }
+    if (!collection) {
+        db.createCollection("content", {}, function(err, createdCollection) {
+            if (err) {
+                return console.error(err);
+            }
+            collection = createdCollection;
+            console.log("Empty database, populating it with default content");
+            var contentArray = JSON.parse(fs.readFileSync(path.join(__dirname, "jsdav-plugin", "mongodav", "default-content.json")));
+            async.eachSeries(contentArray, function(contentDocument, callback) {
+                contentDocument.lastModified = new Date();
+                contentDocument.created = new Date();
+                collection.insert(contentDocument, callback);
+            }, function(err) {
+                if (err) {
+                    console.error("Error populating database", err);
+                    return;
+                }
+                console.log("Done populating database");
+                return initJsDav(null, createdCollection);
+            });
+        });
+    }
+
+
+});
 
 var repositoryRoot = path.join(__dirname, siteRootPath);
-var jsDAV_Mongo_Tree = require("./jsdav-plugin/mongodav/jsDAV_Mongo_Tree").new("/", db);
-var nodes = [
-
-];
-var jsDavService = jsDAV.mount({
-//    node: repositoryRoot,
-    tree:           jsDAV_Mongo_Tree,
-    mount:          "/",
-    server:         app,
-    standalone:     false,
-//    "locksBackend": locksBackend,
-    "authBackend": authBackend,
-    plugins: jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
-            "bufferResource": require("./jsdav-plugin/BufferResourcePlugin"),
-		    "nonHttpRequest": jsDAV_NonHttpRequest_Plugin
-    })
-});
 app.use("/public", express.static(__dirname + "/public"));
 app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
 app.set("hostname", process.env.HOSTNAME || "localhost");

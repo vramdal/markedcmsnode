@@ -22,15 +22,24 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Colle
      * @param {Buffer} data Initial payload
      * @param {String} [enc]
      * @param {Function} cbfscreatefile
-     * @return void
+     * @return {*}
      */
     createFile: function(name, data, enc, cbfscreatefile) {
-        this.tree.content.insert({
+        if (name.indexOf("/") != -1) {
+            return cbfscreatefile(Exc.BadRequest("Name cannot contain '/'"));
+        } else if (name.length == 0) {
+            return cbfscreatefile(Exc.BadRequest("Name must not be empty"));
+        }
+        return this.tree.mc.insert({
                     "name": name,
                     "content": data,
                     "pageId": this.pageDoc._id,
                     "enc": enc,
-                    "size": data.length
+                    "size": data.length,
+                    "resourceType": "content", // TODO - different filetypes will have different resource types
+                    "created": new Date(),
+                    "lastModified": new Date(),
+                    "path": this.path + "/" + name
                 },
                 cbfscreatefile);
         /*
@@ -68,7 +77,7 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Colle
                 if (err) {
                     cbfscreatefile(err);
                 }
-                _this.tree.db.content.insert({
+                _this.tree.mc.insert({
                             "name": name,
                             "content": data.toString(),
                             "pageId": _this.pageDoc._id,
@@ -147,10 +156,17 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Colle
             return cbfscreatedir(Exc.BadRequest("Name cannot contain '/'"));
         } else if (name.length == 0) {
             return cbfscreatedir(Exc.BadRequest("Name must not be empty"));
+        } else if (this.path == "/templates") {
+            return cbfscreatedir(Exc.BadRequest("Cannot create subfolders under /templates"));
         }
-        this.tree.db.pages.insert({
+        this.tree.mc.insert({
                     "_id": mongojs.ObjectId(),
-                    "path": (this.path == "/" ? "" : this.path) + "/" + name},
+                    "path": (this.path == "/" ? "" : this.path) + "/" + name,
+                    "created": new Date(),
+                    "title": name,
+                    "resourceType": "page",
+                    "lastModified": new Date()
+                },
                 function(err) {
                     cbfscreatedir(err);
                 });
@@ -199,7 +215,7 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Colle
      * @return Sabre_DAV_INode[]
      */
     getChildren: function(cbfsgetchildren) {
-        return this.tree.getChildrenForPage(this.pageDoc, cbfsgetchildren);
+        return this.tree.getChildrenForNode(this.pageDoc, cbfsgetchildren);
 /*
         Async.readdir(this.path)
                 .stat()
@@ -221,8 +237,8 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Colle
      *
      * @return void
      */
-    "delete": function(cbfsdel) {
-        Async.rmtree(this.path, cbfsdel);
+    "delete": function(cbfsdel) { // TODO
+        cbfsdel("Not implemented");
     },
 
     /**
