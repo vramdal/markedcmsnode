@@ -72,9 +72,17 @@ jsDAV.createServer({
 */
 
 // From https://gist.github.com/touv/11045459
+var mongojs = require("mongojs");
+var db = mongojs("markedcms", ["structure", "content", "pages", "templates"]);
+
 var repositoryRoot = path.join(__dirname, siteRootPath);
+var jsDAV_Mongo_Tree = require("./jsdav-plugin/mongodav/jsDAV_Mongo_Tree").new("/", db);
+var nodes = [
+
+];
 var jsDavService = jsDAV.mount({
-    node: repositoryRoot,
+//    node: repositoryRoot,
+    tree:           jsDAV_Mongo_Tree,
     mount:          "/",
     server:         app,
     standalone:     false,

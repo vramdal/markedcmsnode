@@ -16,7 +16,7 @@
                     console.error("Parse error: ", e);
                     return;
                 }
-                var result = jsonPath(window.json, document.querySelector("input[type='text']").value);
+                var result = jsonPath(window.json, document.querySelector("input[type='text']").value, true);
                 console.log(result);
             });
         });
