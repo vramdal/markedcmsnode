@@ -69,8 +69,8 @@ var jsDAV_Mongo_Node = module.exports = jsDAV_iNode.extend({
             cbfsgetlm(null, stat.mtime);
         });
     },
-
 */
+
     /**
      * Returns whether a node exists or not
      *

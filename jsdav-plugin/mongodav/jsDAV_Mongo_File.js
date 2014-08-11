@@ -152,7 +152,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      * @return int
      */
     getSize: function(cbfsgetsize) {
-        cbfsgetsize(null, this.contentDoc.size);
+        cbfsgetsize(null, this.contentDoc.content.length);
 /*
         if (this.$stat)
             return cbfsgetsize(null, this.$stat.size);
@@ -188,5 +188,10 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      */
     getContentType: function(cbfsmime) {
         return cbfsmime(null, mime.lookup(this.contentDoc.path, "application/octet-stream"));
+    },
+
+    getLastModified: function(cbfsgetlm) {
+        return cbfsgetlm(null, this.contentDoc.lastModified);
     }
+
 });

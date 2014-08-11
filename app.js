@@ -134,7 +134,6 @@ db.getCollectionNames(function(err, collectionNames) {
 
 });
 
-var repositoryRoot = path.join(__dirname, siteRootPath);
 app.use("/public", express.static(__dirname + "/public"));
 app.set('port', process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT);
 app.set("hostname", process.env.HOSTNAME || "localhost");
@@ -212,9 +211,9 @@ app.all("*",
         },
         function(req, res, next) {
 //            console.log("Her skal vi rendre resultatet: ", req["markedCms"].resource);
-            console.log("Type: " + req["markedCms"].resource.getMimeType());
             var resource = req["markedCms"].resource;
             if (resource) {
+                console.log("Type: " + req["markedCms"].resource.getMimeType());
                 var compiler = compilers[resource.getMimeType()];
                 if (compiler) {
                     return compiler(req, res, next);
@@ -225,14 +224,16 @@ app.all("*",
 //            res.end();
         },
         function(req, res, next) {
-            console.log("Ferdig kompilert: ", req["markedCms"].resource.compiled);
-            if (req["markedCms"].render) {
-                var resource = req["markedCms"].resource;
-                var renderer = renderers[resource.getMimeType()];
-                if (renderer) {
-                    return renderer(req, res, next);
-                }
+            if (req["markedCms"].resource) {
+                console.log("Ferdig kompilert: ", req["markedCms"].resource.compiled);
+                if (req["markedCms"].render) {
+                    var resource = req["markedCms"].resource;
+                    var renderer = renderers[resource.getMimeType()];
+                    if (renderer) {
+                        return renderer(req, res, next);
+                    }
 
+                }
             }
             next();
         }
@@ -324,5 +325,4 @@ process.on('uncaughtException', function(err) {
 
 http.createServer(app).listen(app.get('port'), function(){
     console.log("Express server listening on port %d in %s mode", port, app.settings.env);
-	console.log("jsDAV repository on " + repositoryRoot);
 });
