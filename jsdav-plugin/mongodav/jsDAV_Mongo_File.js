@@ -141,9 +141,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      * @return void
      */
     "delete": function(cbfsfiledel) {
-        this.tree.db.content.remove({_id: this.contentDoc._id}, 1, function(err) {
-            cbfsfiledel(err);
-        });
+        this.tree.deletePath(this.contentDoc.path, cbfsfiledel);
     },
 
     /**

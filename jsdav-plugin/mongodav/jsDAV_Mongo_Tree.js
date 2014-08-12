@@ -36,7 +36,7 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
 
     getChildrenForNode: function(parent, cbfschildren) {
         var _this = this;
-        var parentPath = (parent.path == "/" ? "" : parent.path).replace("/", "\\/");
+        var parentPath = this.escapeRegexString(parent.path == "/" ? "" : parent.path);
 //        parentPath = parentPath.replace("/", "\\/");
         var reg = new RegExp("^" + ( parentPath) + "\/[^\/]+$");
         this.mc.find({"path": reg}, function(err, documents) {
@@ -52,15 +52,22 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
      */
     getNodeForPath: function (path, cbfstree) {
         var _this = this;
-        path = path.indexOf("/") != 0 ? "/" + path : path;
-        this.mc.findOne({"path": path}, function(err, found) {
+        this.getDocumentForPath(path, function(err, document) {
             if (err) {
                 return cbfstree(err);
             }
+            return _this.getNodeForDocument(document, cbfstree);
+        });
+    },
+
+    getDocumentForPath: function(path, callback) {
+        var _this = this;
+        path = path.indexOf("/") != 0 ? "/" + path : path;
+        this.mc.findOne({"path": path}, function(err, found) {
             if (!found) {
-                return cbfstree(new Exc.FileNotFound("File at location " + path + " not found"));
+                return callback(new Exc.FileNotFound("File at location " + path + " not found"));
             }
-            return _this.getNodeForDocument(found, cbfstree);
+            return callback(err, found);
         });
     },
 
@@ -116,26 +123,38 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
     /**
      * Used by self::copy
      *
-     * @param {String} source
-     * @param {String} destination
+     * @param {String} sourcePath
+     * @param {String} destinationPath
      * @return void
      */
-    realCopy: function (source, destination, cbfsrcopy) {  // TODO: Remove
-        /*
-         if (!this.insideSandbox(destination)) {
-         return cbfsrcopy(new Exc.Forbidden("You are not allowed to copy to " +
-         this.stripSandbox(destination)));
-         }
-
-         Fs.stat(source, function (err, stat) {
-         if (!Util.empty(err))
-         return cbfsrcopy(err);
-         if (stat.isFile())
-         Async.copyfile(source, destination, true, cbfsrcopy);
-         else
-         Async.copytree(source, destination, cbfsrcopy);
-         });
-         */
+    realCopy: function (sourcePath, destinationPath, cbfsrcopy) {
+        var _this = this;
+        if (!this.insideSandbox(destinationPath)) {
+            return cbfsmove(new Exc.Forbidden("You are not allowed to copy to " +
+                    this.stripSandbox(destinationPath)));
+        }
+        async.series([
+                    function(callback) {
+                        _this.mc.findOne({"path": sourcePath}, function(err, foundSourceDoc) {
+                            if (err || !foundSourceDoc) {
+                                return callback(err || new Exc.FileNotFound("File at location " + path + " not found"));
+                            } else {
+                                return callback(null, foundSourceDoc);
+                            }
+                        });
+                    },
+                    function(callback) {
+                        _this.mc.remove({"path": destinationPath}, callback);
+                    }
+                ],
+                function(err, results) {
+                    var sourceDoc = results[0];
+                    sourceDoc.path = destinationPath;
+                    delete sourceDoc._id;
+                    _this.mc.insert(sourceDoc);
+                    cbfsrcopy(null);
+                }
+        );
     },
 
     /**
@@ -143,19 +162,46 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
      *
      * If the destination exists, delete it first.
      *
-     * @param {String} source
-     * @param {String} destination
+     * @param {String} sourcePath
+     * @param {String} destinationPath
      * @return void
      */
-    move: function (source, destination, cbfsmove) {  // TODO
-        source = this.getRealPath(source);
-        destination = this.getRealPath(destination);
-        if (!this.insideSandbox(destination)) {
+    move: function (sourcePath, destinationPath, cbfsmove) {  // TODO
+        var _this = this;
+        sourcePath = this.getRealPath(sourcePath);
+        destinationPath = this.getRealPath(destinationPath);
+        if (!this.insideSandbox(destinationPath)) {
             return cbfsmove(new Exc.Forbidden("You are not allowed to move to " +
-                    this.stripSandbox(destination)));
+                    this.stripSandbox(destinationPath)));
         }
-        Fs.rename(source, destination, function (err) {
-            cbfsmove(err, source, destination);
-        });
+        async.series([
+                    function(callback) {
+                        return _this.getDocumentForPath(sourcePath, callback);
+                    },
+                    function(callback) {
+                        return _this.mc.remove({"path": destinationPath}, callback);
+                    }
+                ],
+                function(err, results) {
+                    var sourceDoc = results[0];
+                    sourceDoc.path = destinationPath;
+                    return _this.mc.update({"_id": sourceDoc._id}, sourceDoc, function(err) {
+                        cbfsmove(err, sourcePath, destinationPath);
+                    });
+                }
+        );
+    },
+    /**
+     * http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+     * @param str
+     * @returns {string}
+     */
+    escapeRegexString: function(str) {
+        return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+    },
+    deletePath: function(path, cbfsfiledel) {
+        path = this.escapeRegexString(path == "/" ? "" : path);
+        var reg = new RegExp("^" + (path) + "(\/[^\/]+)*$");
+        this.mc.remove({"path": reg}, cbfsfiledel);
     }
 });

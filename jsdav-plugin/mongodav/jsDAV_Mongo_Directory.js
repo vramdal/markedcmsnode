@@ -237,9 +237,10 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Colle
      *
      * @return void
      */
-    "delete": function(cbfsdel) { // TODO
-        cbfsdel("Not implemented");
+    "delete": function(cbfsfiledel) {
+        this.tree.deletePath(this.pageDoc.path, cbfsfiledel);
     },
+
 
     /**
      * Returns available diskspace information
