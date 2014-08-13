@@ -1,12 +1,14 @@
 var jsDAV_Mongo_Node = require("./jsDAV_Mongo_Node");
-var jsDAV_Mongo_File = require("./jsDAV_Mongo_File");
 var jsDAV_Collection = require("./../../node_modules/jsDAV/lib/DAV/collection");
 var jsDAV_iQuota = require("./../../node_modules/jsDAV/lib/DAV/interfaces/iQuota");
+var iJsonRepresentation = require("./iJsonRepresentation");
+var jsDAV_Mongo_Prop_Template = require("./jsDAV_Mongo_Prop_Template");
 var mongojs = require("mongojs");
 var Async = require("asyncjs");
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
 
-var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Collection, jsDAV_iQuota, {
+//noinspection JSUnusedGlobalSymbols
+var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepresentation, jsDAV_Collection, jsDAV_iQuota, jsDAV_Mongo_Prop_Template, {
     initialize: function(path, pageDoc, tree) {
         this.path = path;
         this.pageDoc = pageDoc;
@@ -271,5 +273,8 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(jsDAV_Colle
     },
     getLastModified: function(cbfsgetlm) {
         return cbfsgetlm(null, this.pageDoc.lastModified);
+    },
+    getJson: function() {
+        return this.pageDoc;
     }
 });

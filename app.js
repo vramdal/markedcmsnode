@@ -64,6 +64,7 @@ var jsDAV = require("jsDAV/lib/jsdav");
 //var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
 var jsDAV_Auth_Backend_External = require("./jsdav-plugin/AuthPlugin");
 var jsDAV_NonHttpRequest_Plugin = require("./jsdav-plugin/NonHttpRequestPlugin");
+var jsDAV_JsonRendererPlugin = require("./jsdav-plugin/JsonRendererPlugin");
 var authBackend = jsDAV_Auth_Backend_External;
 var myResourceFetcher = new ResourceFetcher(jsDAV_NonHttpRequest_Plugin);
 /*
@@ -94,6 +95,7 @@ var initJsDav = function(err, collection) {
         //    "locksBackend": locksBackend,
         "authBackend": authBackend,
         plugins:       jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
+            "jsonRenderer": jsDAV_JsonRendererPlugin,
             "bufferResource": require("./jsdav-plugin/BufferResourcePlugin"),
             "nonHttpRequest": jsDAV_NonHttpRequest_Plugin
         })
