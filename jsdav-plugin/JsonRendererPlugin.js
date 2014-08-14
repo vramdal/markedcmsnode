@@ -7,8 +7,9 @@ var jsDAV_iFile = require("../node_modules/jsDAV/lib/DAV/interfaces/iFile");
 var Exc = require("./../node_modules/jsDAV/lib/shared/exceptions");
 var iJsonRepresentation = require("./mongodav/iJsonRepresentation");
 var globalHandler = null;
+var BaseRenderer_Plugin = require("./BaseRendererPlugin");
 
-var jsDAV_JsonRenderer_Plugin = module.exports = jsDAV_ServerPlugin.extend({
+var jsDAV_JsonRenderer_Plugin = module.exports = BaseRenderer_Plugin.extend({
 	/**
 	 * Plugin name
 	 *
@@ -24,6 +25,7 @@ var jsDAV_JsonRenderer_Plugin = module.exports = jsDAV_ServerPlugin.extend({
 //	handler: null,
 
 	initialize: function (handler) {
+		registeredContentTypes.push("application/json");
         handler.addEventListener("beforeMethod", this.httpGetInterceptor.bind(this));
         this.handler = handler;
 	},
