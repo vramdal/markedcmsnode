@@ -63,6 +63,17 @@ module.exports = jsDAV_ServerPlugin.extend({
         }
         var uri = this.handler.getRequestUri();
         var self = this;
+        renderer.setResourceFetcher(function(path, callback) {
+            self.handler.getNodeForPath(path, function(err, node) {
+                if (err) {
+                    return callback(err);
+                }
+                if (!node.hasFeature(iJsonRepresentation)) {
+                    return callback(err);
+                }
+                callback(node.getJson());
+            });
+        });
         this.handler.getNodeForPath(uri, function (err, node) {
             if (err) {
                 return e.next(err);
@@ -79,13 +90,13 @@ module.exports = jsDAV_ServerPlugin.extend({
                 delete document["_id"];
             }
             if (err) {
-                return e(err);
+                return e.next(err);
             } else if (!document) {
-                return self.handleError(new Exc.FileNotFound("No resource fond at " + uri));
+                return self.handleError(renderer, new Exc.FileNotFound("No resource fond at " + uri));
             }
             return renderer.renderDocument(document, function(err, str) {
                 if (err) {
-                    return self.handleError(err);
+                    return self.handleError(renderer, err);
                 }
                 self.handler.httpResponse.writeHead(200, {
                             "content-type": renderer.getSupportedContentType() + "; charset=utf-8",
@@ -100,21 +111,12 @@ module.exports = jsDAV_ServerPlugin.extend({
     },
     handleError: function(renderer, err) {
         var self = this;
-        self.handler.httpResponse.writeHead(err.code, {"content-type": renderer.getSupportedContentType() + "; charset=utf-8"});
-        if (err instanceof Exc.jsDAV_Exception) {
-            err.getHTTPHeaders(this, function (err2, h) {
-                if (err2) {
-                    console.error("Error writing error response", err2);
-                    return;
-                }
-                self.handler.httpResponse.end(renderer.renderError(err));
-            });
-        } else {
+        if (!(err instanceof Exc.jsDAV_Exception)) {
             err.code = 500;
             err.message = "Internal server error";
-            self.handler.httpResponse.end(renderer.renderError(err));
-
         }
+        self.handler.httpResponse.writeHead(err.code, {"content-type": renderer.getSupportedContentType() + "; charset=utf-8"});
+        self.handler.httpResponse.end(renderer.renderError(err));
     }
 });
 

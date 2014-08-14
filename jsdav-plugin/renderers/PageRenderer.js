@@ -1,5 +1,7 @@
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
 var AbstractRenderer = require("./AbstractRenderer");
+var async = require("async");
+var jade = require("jade");
 
 module.exports = AbstractRenderer.extend({
 	/**
@@ -9,8 +11,14 @@ module.exports = AbstractRenderer.extend({
 	 */
 	name: "pageRenderer",
 
-    renderDocument: function(document, callback) {
-        callback(null, document.title);
+    renderDocument: function(page, callback) {
+        this.resourceFetcher("/templates/" + page.template, function(err, template) {
+            if (err) {
+                return callback(err);
+            }
+            jade.compile(template.content);
+        });
+        callback(null, page.title);
     },
 
     acceptsResourceType: function(resourceType) {
