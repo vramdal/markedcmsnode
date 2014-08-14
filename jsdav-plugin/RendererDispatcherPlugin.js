@@ -64,6 +64,7 @@ module.exports = jsDAV_ServerPlugin.extend({
         var uri = this.handler.getRequestUri();
         var self = this;
         renderer.setResourceFetcher(function(path, callback) {
+            // TODO: Prevent recursion
             self.handler.getNodeForPath(path, function(err, node) {
                 if (err) {
                     return callback(err);
