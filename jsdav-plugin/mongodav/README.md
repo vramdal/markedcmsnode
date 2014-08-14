@@ -24,24 +24,26 @@ The other properties depends on `resourceType`, but all documents have at least 
         "title": "Front page",
         "resourceType": "page",
         "template": "frontpage",
-        "content": {
+        "slots": {
             "mainstory": "index.md",
             "substory": "documentation.md",
             "substory2": "substory2.md"
         },
         "lastModified": date,
-        "path": "/"
+        "path": "/",
+        "language": "english"
     },
     {
         "_id": "456def",
         "title": "My first sub-page",
         "resourceType": "page",
         "template": "article",
-        "content": {
+        "slots": {
             "story": "some-story.md"
          },
          "lastModified": date,
-         "path": "/my-first-subpage"
+         "path": "/my-first-subpage",
+         "language": "english"
      }
 
     
@@ -69,6 +71,7 @@ Templates may only exist in the `/templates` folder, so `path` will always be `/
        "content": "Some *Markdown*  goes here",
        "resourceType": "content",
        "lastModified": date,
-       "path": "/my-first-subpage/mystory.md"
+       "path": "/my-first-subpage/mystory.md",
+       "language": "english"
      }
      

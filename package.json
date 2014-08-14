@@ -1,6 +1,6 @@
 {
   "name": "markedcms",
-  "version": "0.0.1-21",
+  "version": "0.0.1-25",
   "private": true,
   "main": "app.js",
   "scripts": {

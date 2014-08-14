@@ -48,7 +48,7 @@ var jsDAV_JsonRenderer_Plugin = module.exports = jsDAV_ServerPlugin.extend({
         var self = this;
         this.handler.getNodeForPath(uri, function (err, node) {
             if (err) {
-                return e.next(err);
+                return self.handleError(err);
             } else {
                 if (node.hasFeature(iJsonRepresentation)) {
                     var json = node.getJson();
@@ -62,9 +62,23 @@ var jsDAV_JsonRenderer_Plugin = module.exports = jsDAV_ServerPlugin.extend({
                             }
                     );
                     self.handler.httpResponse.write(jsonStr);
+					self.handler.httpResponse.end();
                 }
             }
             return e.next();
         });
-    }
+    },
+	handleError: function(err) {
+		var self = this;
+		if (err instanceof Exc.jsDAV_Exception) {
+			err.getHTTPHeaders(this, function (err2, h) {
+				if (err2) {
+					console.error("Error writing error response", err2);
+					return;
+				}
+				self.handler.httpResponse.writeHead(err.code, {"content-type": "application/json; charset=utf-8"});
+				self.handler.httpResponse.end(JSON.stringify({"code": err.code, "message": err.message}));
+			});
+		}
+	}
 });

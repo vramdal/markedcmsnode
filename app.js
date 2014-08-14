@@ -64,7 +64,8 @@ var jsDAV = require("jsDAV/lib/jsdav");
 //var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
 var jsDAV_Auth_Backend_External = require("./jsdav-plugin/AuthPlugin");
 var jsDAV_NonHttpRequest_Plugin = require("./jsdav-plugin/NonHttpRequestPlugin");
-var jsDAV_JsonRendererPlugin = require("./jsdav-plugin/JsonRendererPlugin");
+var JsonRendererPlugin = require("./jsdav-plugin/JsonRendererPlugin");
+var PageRendererPlugin = require("./jsdav-plugin/PageRendererPlugin");
 var authBackend = jsDAV_Auth_Backend_External;
 var myResourceFetcher = new ResourceFetcher(jsDAV_NonHttpRequest_Plugin);
 /*
@@ -94,11 +95,12 @@ var initJsDav = function(err, collection) {
         standalone:    false,
         //    "locksBackend": locksBackend,
         "authBackend": authBackend,
-        plugins:       jsDAV_Util.extend(jsDAV_Server.DEFAULT_PLUGINS, {
-            "jsonRenderer": jsDAV_JsonRendererPlugin,
+        plugins:       jsDAV_Util.extend({
+			"pageRenderer": PageRendererPlugin,
+            "jsonRenderer": JsonRendererPlugin,
             "bufferResource": require("./jsdav-plugin/BufferResourcePlugin"),
             "nonHttpRequest": jsDAV_NonHttpRequest_Plugin
-        })
+        }, jsDAV_Server.DEFAULT_PLUGINS)
     });
 };
 
@@ -118,6 +120,16 @@ db.getCollectionNames(function(err, collectionNames) {
             collection = createdCollection;
             console.log("Empty database, populating it with default content");
             var contentArray = JSON.parse(fs.readFileSync(path.join(__dirname, "jsdav-plugin", "mongodav", "default-content.json")));
+			async.eachSeries([
+				{fieldOrSpec: {"path": 1}, options: {unique: true}/*},
+				{fieldOrSpec: {"content": "text"}, options: {default_language: "norwegian", language_override: "language"}*/}
+			], function(indexSpec, callback) {
+				collection.ensureIndex(indexSpec.fieldOrSpec, indexSpec.options, callback);
+			}, function(err) {
+				if (err) {
+					console.error("Error creating indexes: ", err);
+				}
+			});
             async.eachSeries(contentArray, function(contentDocument, callback) {
                 contentDocument.lastModified = new Date();
                 contentDocument.created = new Date();

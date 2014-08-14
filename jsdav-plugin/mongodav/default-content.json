@@ -1,64 +1,70 @@
 [
-    {
-        "path": "/",
-        "resourceType": "page",
-        "_id": "root",
-        "title": "Front page",
-        "template": "frontpage",
-        "content": {
-            "mainstory": "index.md",
-            "substory": "documentation.md",
-            "substory2": "substory2.md"
-        }
-    },
-    {
-        "path": "/subpage",
-        "resourceType": "page",
-        "_id": "subpage",
-        "title": "Sub page",
-        "template": "article",
-        "content": {
-              "story": "aboutme.md"
-        }
-    },
-    {
-        "path": "/templates",
-        "resourceType": "folder",
-        "_id": "folder"
-    },
-    {
-        "path": "/templates/frontpage.jade",
-        "resourceType": "template",
-        "_id": "frontpage",
-        "title": "Front page template",
-        "content": "Some Jade goes here"
-    },
-    {
-        "path": "/templates/article.jade",
-        "resourceType": "template",
-        "_id": "article",
-        "title": "Article template",
-        "content": "Some Jade goes here"
-    },
-    {
-      "content": "Some *Markdown*  goes here",
-      "resourceType": "content",
-      "path": "/index.md"
-    },
-    {
-      "content": "Some *Markdown*  goes here",
-      "resourceType": "content",
-      "path": "/documentation.md"
-    },
-    {
-      "content": "Some *Markdown*  goes here",
-      "resourceType": "content",
-      "path": "/substory2.md"
-    },
-    {
-      "content": "Some *Markdown*  goes here",
-      "resourceType": "content",
-      "path": "/subpage/aboutme.md"
-    }
+	{
+		"path": "/",
+		"resourceType": "page",
+		"_id": "root",
+		"title": "Front page",
+		"template": "frontpage",
+		"slots": {
+			"mainstory": "index.md",
+			"substory": "documentation.md",
+			"substory2": "substory2.md"
+		},
+		"language": "english"
+	},
+	{
+		"path": "/subpage",
+		"resourceType": "page",
+		"_id": "subpage",
+		"title": "Sub page",
+		"template": "article",
+		"slots": {
+			"story": "aboutme.md"
+		},
+		"language": "english"
+	},
+	{
+		"path": "/templates",
+		"resourceType": "folder",
+		"_id": "folder"
+	},
+	{
+		"path": "/templates/frontpage.jade",
+		"resourceType": "template",
+		"_id": "frontpage",
+		"title": "Front page template",
+		"content": "Some Jade goes here"
+	},
+	{
+		"path": "/templates/article.jade",
+		"resourceType": "template",
+		"_id": "article",
+		"title": "Article template",
+		"content": "Some Jade goes here"
+	},
+	{
+		"content": "Some *Markdown*  goes here",
+		"resourceType": "content",
+		"path": "/index.md",
+		"language": "english"
+	},
+	{
+		"content": "Some *Markdown*  goes here",
+		"resourceType": "content",
+		"path": "/documentation.md",
+		"language": "english"
+	},
+	{
+		"content": "Some *Markdown*  goes here",
+		"resourceType": "content",
+		"path": "/substory2.md",
+		"language": "english"
+	},
+	{
+		"content": "Some *Markdown*  goes here",
+		"resourceType": "content",
+		"path": "/subpage/aboutme.md",
+		"language": "english"
+	}
 
 ]
