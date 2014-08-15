@@ -113,7 +113,6 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(iJsonRepresentat
      * @return Buffer
      */
     getStream: function(start, end, cbfsfileget) {
-        var options;
         start = start || 0;
         end = end || this.contentDoc.content.length;
         return cbfsfileget(null, this.contentDoc.content.substring(start, end));

@@ -99,9 +99,7 @@ var initJsDav = function(err, collection) {
         //    "locksBackend": locksBackend,
         "authBackend": authBackend,
         plugins:       jsDAV_Util.extend({
-            "rendererDispathcerPlugin": RendererDispatcherPlugin,
-            "bufferResource": require("./jsdav-plugin/BufferResourcePlugin"),
-            "nonHttpRequest": jsDAV_NonHttpRequest_Plugin
+            "rendererDispathcerPlugin": RendererDispatcherPlugin
         }, jsDAV_Server.DEFAULT_PLUGINS)
     });
 };
@@ -200,71 +198,10 @@ app.get("/auth/logout", function(req, res, next) {
 });
 app.all("*",
         function(req, res, next) {
-            req["markedCms"] = {};
-            req["markedCms"].siteRootPath = siteRootPath;
-            req["markedCms"].templatePath = "templates";
-			req["markedCms"].resourceFetcher = myResourceFetcher;
-            return next();
-        },
-        function(req, res, next) {
-            if (req.url.search(/^\/.*\/$/) >= 0 && req.method == "GET") {
-                req.url = req.url + "index.page.json";
-                req["markedCms"].bufferResource = true;
-                req["markedCms"].render = true;
-            }
-            if (req.headers["x-markedcms-bufferresource"] && req.headers["x-markedcms-bufferresource"] != "false") {
-                req["markedCms"].bufferResource = true;
-            }
-            if (req.headers["x-markedcms-render"] && req.headers["x-markedcms-render"] != "false") {
-                req["markedCms"].bufferResource = true;
-                req["markedCms"].render = true;
-            }
-            return next();
-        },
-        function(req, res, next) {
-            req["markedCms"]["next"] = next;
             jsDavService.exec(req, res);
-        },
-        function(req, res, next) {
-//            console.log("Her skal vi rendre resultatet: ", req["markedCms"].resource);
-            var resource = req["markedCms"].resource;
-            if (resource) {
-                console.log("Type: " + req["markedCms"].resource.getMimeType());
-                var compiler = compilers[resource.getMimeType()];
-                if (compiler) {
-                    return compiler(req, res, next);
-                }
-            }
-            next();
-//            res.json("OK");
-//            res.end();
-        },
-        function(req, res, next) {
-            if (req["markedCms"].resource) {
-                console.log("Ferdig kompilert: ", req["markedCms"].resource.compiled);
-                if (req["markedCms"].render) {
-                    var resource = req["markedCms"].resource;
-                    var renderer = renderers[resource.getMimeType()];
-                    if (renderer) {
-                        return renderer(req, res, next);
-                    }
+		}
 
-                }
-            }
-            next();
-        }
 );
-/*
-app.use(function (req, res, next) {
-//	if (req.url.search(/^\/webdav/) >= 0) {
-    jsDavService.exec(req, res);
-//    next();
-//	} else {
-//		next();
-//	}
-});
-*/
-
 
 // all environments
 app.set('views', path.join(__dirname, 'views'));
