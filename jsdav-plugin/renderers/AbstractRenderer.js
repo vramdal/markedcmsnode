@@ -11,8 +11,8 @@ module.exports = Base.extend({
 	 */
 	name: undefined,
 
-    setResourceFetcher: function(resourceFetcher) {
-        this.resourceFetcher = resourceFetcher;
+    setTree: function(tree) {
+        this.tree = tree;
     },
     getSupportedContentType: function() {
         return "";

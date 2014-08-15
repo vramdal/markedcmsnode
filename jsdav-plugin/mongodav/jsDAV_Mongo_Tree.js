@@ -10,9 +10,6 @@
 var jsDAV_Tree = require("./../../node_modules/jsDAV/lib/DAV/tree");
 var jsDAV_Mongo_Directory = require("./jsDAV_Mongo_Directory");
 var jsDAV_Mongo_File = require("./jsDAV_Mongo_File");
-var mongojs = require("mongojs");
-
-var Fs = require("fs");
 var async = require("async");
 var Util = require("./../../node_modules/jsDAV/lib/shared/util");
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
@@ -24,10 +21,10 @@ var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
  * Supply the path you'd like to share.
  *
  * @param {String} basePath
- * @param {MongoDB collection} collection
+ * @param {Object} collection
  * @contructor
  */
-var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
+module.exports = jsDAV_Tree.extend({
 
     initialize: function (basePath, mc) {
         this.basePath = basePath;
@@ -61,7 +58,6 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
     },
 
     getDocumentForPath: function(path, callback) {
-        var _this = this;
         path = path.indexOf("/") != 0 ? "/" + path : path;
         this.mc.findOne({"path": path}, function(err, found) {
             if (!found) {
@@ -94,6 +90,10 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
         }
     },
 
+	getDocuments: function(queryObj, callback) {
+		this.mc.find(queryObj, callback);
+	},
+
     /**
      * Returns the real filesystem path for a webdav url.
      *
@@ -104,29 +104,31 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
         return Util.rtrim(this.basePath, "/") + "/" + Util.trim(publicPath, "/");
     },
 
-    /**
-     * Copies a file or directory.
-     *
-     * This method must work recursively and delete the destination
-     * if it exists
-     *
-     * @param {String} source
-     * @param {String} destination
-     * @return void
-     */
+	/**
+	 * Copies a file or directory.
+	 *
+	 * This method must work recursively and delete the destination
+	 * if it exists
+	 *
+	 * @param {String} source
+	 * @param {String} destination
+	 * @return void
+	 * @param cbfscopy
+	 */
     copy: function (source, destination, cbfscopy) {  // TODO
         source = this.getRealPath(source);
         destination = this.getRealPath(destination);
         this.realCopy(source, destination, cbfscopy);
     },
 
-    /**
-     * Used by self::copy
-     *
-     * @param {String} sourcePath
-     * @param {String} destinationPath
-     * @return void
-     */
+	/**
+	 * Used by self::copy
+	 *
+	 * @param {String} sourcePath
+	 * @param {String} destinationPath
+	 * @return void
+	 * @param cbfsrcopy
+	 */
     realCopy: function (sourcePath, destinationPath, cbfsrcopy) {
         var _this = this;
         if (!this.insideSandbox(destinationPath)) {
@@ -157,15 +159,16 @@ var jsDAV_Mongo_Tree = module.exports = jsDAV_Tree.extend({
         );
     },
 
-    /**
-     * Moves a file or directory recursively.
-     *
-     * If the destination exists, delete it first.
-     *
-     * @param {String} sourcePath
-     * @param {String} destinationPath
-     * @return void
-     */
+	/**
+	 * Moves a file or directory recursively.
+	 *
+	 * If the destination exists, delete it first.
+	 *
+	 * @param {String} sourcePath
+	 * @param {String} destinationPath
+	 * @return void
+	 * @param cbfsmove
+	 */
     move: function (sourcePath, destinationPath, cbfsmove) {  // TODO
         var _this = this;
         sourcePath = this.getRealPath(sourcePath);
