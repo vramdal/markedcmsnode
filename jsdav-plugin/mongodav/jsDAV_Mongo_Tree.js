@@ -80,13 +80,14 @@ module.exports = jsDAV_Tree.extend({
             case "folder": clazz = jsDAV_Mongo_Directory; break;
             case "content": clazz = jsDAV_Mongo_File; break;
             case "template": clazz = jsDAV_Mongo_File; break;
+            default: clazz = jsDAV_Mongo_File;
         }
         var result;
         if (clazz) {
             result = clazz.new(document.path, document, this);
             return callback(null, result);
         } else {
-            return callback(new Exc.NotImplemented("File at " + path + " + has resource type " + document.resourceType + " which is not supported"));
+            return callback(new Exc.NotImplemented("File at " + document.path + " + has resource type " + document.resourceType + " which is not supported"));
         }
     },
 

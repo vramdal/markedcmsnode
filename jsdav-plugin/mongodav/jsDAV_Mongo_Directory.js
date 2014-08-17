@@ -6,6 +6,7 @@ var jsDAV_Mongo_Prop_Template = require("./jsDAV_Mongo_Prop_Template");
 var mongojs = require("mongojs");
 var Async = require("asyncjs");
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
+var mime = require("mime");
 
 //noinspection JSUnusedGlobalSymbols
 var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepresentation, jsDAV_Collection, jsDAV_iQuota, jsDAV_Mongo_Prop_Template, {
@@ -79,12 +80,21 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
                 if (err) {
                     cbfscreatefile(err);
                 }
+                var mimeType = mime.lookup(name, "application/octet-stream");
+                var resourceType = "attachment";
+                if (mimeType.indexOf("image/") == 0) {
+                    resourceType = "image";
+                }
                 _this.tree.mc.insert({
-                            "name": name,
-                            "content": data.toString(),
-                            "pageId": _this.pageDoc._id,
-                            "size": data.length
-                        }, function(err) {
+                    "name": name,
+                    "content": data.toString(),
+                    "pageId": _this.pageDoc._id,
+                    "size": data.length,
+                    "resourceType": resourceType,
+                    "path": _this.pageDoc.path + "/" + name,
+                    "lastModified": new Date(),
+                    "created": new Date()
+                }, function(err) {
                     cbfscreatefile(err);
                 });
             });

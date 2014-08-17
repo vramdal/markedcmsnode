@@ -261,20 +261,6 @@ app.post(/^\/test\/.+$/,
 
 */
 app.get(/^\/static\/.+$/, rawRoute.getStaticFile(persistence));
-/*
-app.get(/^\/(?!assets\/)(?!public\/)(?!(.*?\..+)$)(.+)$/, pageCompiler.viewContent(persistence));
-app.get(/^\/(?!assets\/)(?!public\/)(?!static\/).*?\..+$/,
-        serveContentNegotiator.negotiator({
-            "text/html": markdownRoute.preview(persistence)
-        }, rawRoute.getFile(persistence)));
-*/
-app.post(/^\/(?!assets\/)(?!public\/)(?!static\/).*?\..+$/,
-        uploadContentNegotiator.uploadNegotiator({
-            "text/x-markdown": rawRoute.saveText(persistence),
-            "multipart/form-data": assetsRoute.upload(persistence)
-        }));
-//app.get(/^\/content\/(.+)$/, publicContent.viewContent(persistence));
-//app.post(/^\/content\/(.+)$/, publicContent.saveContent(persistence));
 
 //noinspection JSUnusedLocalSymbols
 app.use(function (err, req, res, next) {
