@@ -70,8 +70,12 @@ RendererDispatcherPlugin.renderers = [
         require("./jsdav-plugin/renderers/PageRenderer")
 ];
 var authBackend = jsDAV_Auth_Backend_External;
-var myResourceFetcher = new ResourceFetcher(jsDAV_NonHttpRequest_Plugin);
-/*
+var profiler;
+if (process.env.NODE_ENV !== 'production'){  // See https://github.com/mattinsler/longjohn
+    var longjohn = require('longjohn');
+    longjohn.empty_frame = 'ASYNC CALLBACK';  // defaults to '---------------------------------------------'
+    profiler = require('v8-profiler'); // http://docs.nodejitsu.com/articles/getting-started/how-to-debug-nodejs-applications
+}/*
 jsDAV.createServer({
     "node": path.join(siteRootPath),
     "locksBackend": locksBackend,
@@ -198,7 +202,15 @@ app.get("/auth/logout", function(req, res, next) {
 });
 app.all("*",
         function(req, res, next) {
+            if (profiler) {
+                profiler.takeSnapshot("snapshot-1");
+                profiler.startProfiling("profile-1");
+            }
             jsDavService.exec(req, res);
+            if (profiler) {
+                profiler.stopProfiling("profile-1");
+                profiler.takeSnapshot("snapshot-2");
+            }
 		}
 
 );

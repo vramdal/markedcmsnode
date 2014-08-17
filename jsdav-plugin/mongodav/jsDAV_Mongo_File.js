@@ -58,7 +58,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(iJsonRepresentat
 
 
 
-                _this.tree.db.content.update(
+                _this.tree.mc.update(
                         {"_id": _this.contentDoc._id},
                         _this.contentDoc,
                         function (err) {
@@ -115,7 +115,8 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(iJsonRepresentat
     getStream: function(start, end, cbfsfileget) {
         start = start || 0;
         end = end || this.contentDoc.content.length;
-        return cbfsfileget(null, this.contentDoc.content.substring(start, end));
+        cbfsfileget(null, this.contentDoc.content.substring(start, end));
+        cbfsfileget(); // Need to make a no-argument call to cbfsfileget to make it response.end(). See trunk/node/nodetest1/node_modules/jsDAV/lib/DAV/handler.js#611
 /*        if (typeof start == "number" && typeof end == "number")
             options = { start: start, end: end };
         var stream = Fs.createReadStream(this.path, options);
