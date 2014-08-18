@@ -65,6 +65,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
                         {"_id": _this.contentDoc._id},
                         _this.contentDoc,
                         function (err) {
+                            handler.markDirty(_this.path);
                             return cbfsput(err);
                         });
             });
@@ -266,6 +267,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
                 if (err) {
                     return cbfscreatefile(err);
                 }
+                handler.markDirty(_this.path);
 				_this.writeData(data, enc, cbfscreatefile);
             });
         }
@@ -317,6 +319,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
             });
         });
 
+        handler.markDirty(self.path);
         handler.getRequestBody(type, stream, false, cbfswritechunk);
     }
 });
