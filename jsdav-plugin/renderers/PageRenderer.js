@@ -16,9 +16,9 @@ module.exports = AbstractRenderer.extend({
 	 */
 	name: "pageRenderer",
 
-	initialize: function() {
+	initialize: function(handler) {
 		console.log("Initializing PageRenderer");
-        this.systemTemplatesDirectory = Path.join(__dirname, "./../../../views");
+        this.handler = handler;
 	},
 	/**
 	 * http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
@@ -121,6 +121,7 @@ module.exports = AbstractRenderer.extend({
                             'pretty':  true,
                             'basedir': __dirname + "../../../views"}
                 );
+                filledSlots["user"] = renderer.handler.httpRequest.user;
                 var html = templateFn(filledSlots);
                 callback(null, html);
             } catch (e) {

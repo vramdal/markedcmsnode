@@ -27,6 +27,7 @@ module.exports = jsDAV_ServerPlugin.extend({
         for (var i = 0; i < this.renderers.length; i++) {
             var renderer = this.renderers[i];
             this.rendererMap[renderer.getSupportedContentType()] = renderer;
+            renderer.initialize(handler);
         }
         this.handler = handler;
 	},
