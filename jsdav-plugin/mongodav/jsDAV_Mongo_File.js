@@ -205,7 +205,9 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
    			resourceType = "image";
    		} else if (mimeType.indexOf("text/markdown") == 0) {
    			resourceType = "content";
-   		}
+   		} else if (mimeType.indexOf("text/jade") == 0 && this.path.indexOf("/templates/") == 0) {
+            resourceType = "template";
+        }
 
         var name = this.path.substring(this.path.lastIndexOf("/") + 1);
 

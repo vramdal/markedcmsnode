@@ -58,7 +58,6 @@ var jsDAV = require("jsDAV/lib/jsdav");
 //var jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
 //var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
 var jsDAV_Auth_Backend_External = require("./jsdav-plugin/AuthPlugin");
-var jsDAV_NonHttpRequest_Plugin = require("./jsdav-plugin/NonHttpRequestPlugin");
 var RendererDispatcherPlugin = require("./jsdav-plugin/RendererDispatcherPlugin");
 RendererDispatcherPlugin.renderers = [
         require("./jsdav-plugin/renderers/JsonRenderer"),
@@ -90,7 +89,7 @@ var initJsDav = function(err, collection) {
     }
     var jsDAV_Mongo_Tree = require("./jsdav-plugin/mongodav/jsDAV_Mongo_Tree").new("/", collection);
     jsDavService = jsDAV.mount({
-        //    node: repositoryRoot,
+//            node: "/Users/vramdal/temp/markedcms-content",
         tree:          jsDAV_Mongo_Tree,
         mount:         "/",
         server:        app,

@@ -1,8 +1,12 @@
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
+var RendererError = require("./RendererError");
 var AbstractRenderer = require("./AbstractRenderer");
 var async = require("async");
 var jade = require("jade");
 var md = require("marked");
+var Path = require("path");
+var Nodes = require('./../../node_modules/jade/lib/nodes');
+
 
 module.exports = AbstractRenderer.extend({
 	/**
@@ -14,6 +18,7 @@ module.exports = AbstractRenderer.extend({
 
 	initialize: function() {
 		console.log("Initializing PageRenderer");
+        this.systemTemplatesDirectory = Path.join(__dirname, "./../../../views");
 	},
 	/**
 	 * http://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
@@ -25,7 +30,7 @@ module.exports = AbstractRenderer.extend({
 	},
 	renderDocument: function(page, callback) {
 		var renderer = this;
-		var prefetchTemplates = function(pftCallback) {
+		var prefetchSiteTemplates = function(pftCallback) {
 			renderer.tree.getDocuments({"path": /^\/templates\/.*$/, "resourceType": "template"},
 					function (err, foundTemplates) {
 						if (err) {
@@ -75,34 +80,50 @@ module.exports = AbstractRenderer.extend({
 			})
 		};
 		var jadeCompile = function(templatesMap, filledSlots, callback) {
-			if (!jade.Parser.prototype.originalParseExtends) {
-				jade.Parser.prototype.originalParseExtends = jade.Parser.prototype["parseExtends"];
-				jade.Parser.prototype.parseExtends = function() {
-					var path = this.peek('extends').val.trim();
-					if (path.indexOf("@") != 0) {
-						var self = this;
-						var str = templatesMap[path];
-						console.log("Extender: " + str);
-						var parser = new this.constructor(str, path, this.options);
-						parser.blocks = this.blocks;
-						parser.contexts = this.contexts;
-						self.extending = parser;
-						// TODO: null node
-						return new nodes.Literal('');
-					} else {
-						return this.originalParseExtends();
-					}
-				};
-			}
-			var templateFn = jade.compile(templatesMap[page.template], {
-						'filename': "/" + page.template,
-						'pretty': true,
-						'basedir': __dirname + "/../views"}
-			);
-			var html = templateFn(filledSlots);
-			callback(null, html);
+                if (!jade.Parser.prototype.originalParseExtends) {
+                    jade.Parser.prototype.originalParseExtends = jade.Parser.prototype["parseExtends"];
+                    jade.Parser.prototype.originalResolvePath = jade.Parser.prototype["resolvePath"];
+                    jade.Parser.prototype.resolvePath = function(path, purpose) {
+                        return this.originalResolvePath(path.replace('@', '/'), purpose); // Replace leading '@' with '/'
+                    };
+                    jade.Parser.prototype.parseExtends = function () {
+                        var path = this.peek('extends').val.trim();
+                        if (path.indexOf("@") != 0) {
+                            path = this.expect('extends').val.trim();
+                            path = Path.normalize(path).replace("\\", "/");
+                            var self = this;
+                            var str = templatesMap[path];
+                            if (!str) {
+                                return callback(new RendererError("Could not find template " + path));
+                            }
+                            console.log("Extender: " + str);
+                            var parser = new this.constructor(str, path, this.options);
+
+                            parser.blocks = this.blocks;
+                            parser.contexts = this.contexts;
+                            self.extending = parser;
+
+
+                            // TODO: null node
+                            return new Nodes.Literal('');
+                        } else {
+                            return this.originalParseExtends();
+                        }
+                    }
+                }
+            try {
+                var templateFn = jade.compile(templatesMap[page.template], {
+                            'filename': "/" + page.template + ".jade",
+                            'pretty':  true,
+                            'basedir': __dirname + "../../../views"}
+                );
+                var html = templateFn(filledSlots);
+                callback(null, html);
+            } catch (e) {
+                callback(e);
+            }
 		};
-		async.parallel([prefetchTemplates, fetchContent], function(err, results) {
+		async.parallel([prefetchSiteTemplates, fetchContent], function(err, results) {
 			if (err) {
 				return callback(err);
 			}

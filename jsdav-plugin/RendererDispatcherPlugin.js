@@ -87,11 +87,10 @@ module.exports = jsDAV_ServerPlugin.extend({
                     return self.handleError(renderer, err);
                 }
                 self.handler.httpResponse.writeHead(200, {
-                            "content-type": renderer.getSupportedContentType() + "; charset=utf-8",
-                            "content-length": str.length
+                            "content-type": renderer.getSupportedContentType() + "; charset=utf-8"
                         }
                 );
-                self.handler.httpResponse.write(str);
+                self.handler.httpResponse.write(str ? str : "Unknown error");
                 self.handler.httpResponse.end();
                 return e.next();
             });
