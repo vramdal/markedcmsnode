@@ -52,7 +52,9 @@ module.exports = AbstractRenderer.extend({
 				if (!page.slots.hasOwnProperty(slot)) {
 					continue;
 				}
-				toBeFetched.push(renderer.escapeRegexString(page.slots[slot]));
+                var fileName = page.slots[slot];
+                var path = Path.resolve(page.path, fileName);
+                toBeFetched.push(renderer.escapeRegexString(path));
 			}
 			var reg = new RegExp(toBeFetched.join("|"));
 			renderer.tree.getDocuments({"path": reg, "resourceType": "content"}, function(err, foundDocuments) {
@@ -68,7 +70,9 @@ module.exports = AbstractRenderer.extend({
 						if (!page.slots.hasOwnProperty(slot)) {
 							continue;
 						}
-						if (page.slots[slot] == foundDocument.path) {
+                        var fileName = page.slots[slot];
+                        var path = Path.resolve(page.path, fileName);
+						if (path == foundDocument.path) {
 							filledSlots[slot] = {
 								id: foundDocument.path,
 								html: md(foundDocument.content)
