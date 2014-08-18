@@ -29,32 +29,40 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
      * @return {*}
      */
     createFile: function(name, data, enc, cbfscreatefile) {
-        if (name.indexOf("/") != -1) {
-            return cbfscreatefile(Exc.BadRequest("Name cannot contain '/'"));
-        } else if (name.length == 0) {
-            return cbfscreatefile(Exc.BadRequest("Name must not be empty"));
-        }
-        return this.tree.mc.insert({
-                    "name": name,
-                    "content": data,
-                    "pageId": this.pageDoc._id,
-                    "enc": enc,
-                    "size": data.length,
-                    "resourceType": "content", // TODO - different filetypes will have different resource types
-                    "created": new Date(),
-                    "lastModified": new Date(),
-                    "path": this.path + "/" + name
-                },
-                cbfscreatefile);
-        /*
-         var newPath = this.path + "/" + name;
-         if (data.length === 0) {
-         data = new Buffer(0);
-         enc  = "binary";
-         }
-         Fs.writeFile(newPath, data, enc || "utf8", cbfscreatefile);
-         */
+		this._createFile(name, data, enc, cbfscreatefile);
     },
+	_createFile: function(name, data, enc, callback) {
+		if (name.indexOf("/") != -1) {
+			return callback(Exc.BadRequest("Name cannot contain '/'"));
+		} else if (name.length == 0) {
+			return callback(Exc.BadRequest("Name must not be empty"));
+		}
+		var mimeType = mime.lookup(name, "application/octet-stream");
+		var resourceType = "attachment";
+		if (mimeType.indexOf("image/") == 0) {
+			resourceType = "image";
+		} else if (mimeType.indexOf("text/markdown") == 0) {
+			resourceType = "content";
+		}
+		var document = {
+			"name": name,
+			"size": data.length,
+			"resourceType": resourceType,
+			"path": this.pageDoc.path + "/" + name,
+			"lastModified": new Date(),
+			"created": new Date()
+		};
+		console.log("Creating file of mimeType " + mimeType + "(" + name + ")");
+		console.log("Data is a " + (data instanceof Buffer ? "buffer" : "not buffer"));
+		if (mimeType.indexOf("text/") != 0) {
+			document.data = new Binary(data);
+		} else {
+			document.content = data.toString();
+		}
+		this.tree.mc.insert(document, function (err) {
+			callback(err);
+		});
+	},
 
     /**
      * Creates a new file in the directory whilst writing to a stream instead of
@@ -76,37 +84,11 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
             this.writeFileChunk(handler, enc, cbfscreatefile);
         }
         else {
-            var newPath = this.path + "/" + name;
             handler.getRequestBody(enc, function(err, data) {
                 if (err) {
-                    cbfscreatefile(err);
+                    return cbfscreatefile(err);
                 }
-                var mimeType = mime.lookup(name, "application/octet-stream");
-                var resourceType = "attachment";
-                if (mimeType.indexOf("image/") == 0) {
-                    resourceType = "image";
-                }
-				var content;
-				var document = {
-					"name": name,
-					"content": content,
-					"pageId": _this.pageDoc._id,
-					"size": data.length,
-					"resourceType": resourceType,
-					"path": _this.pageDoc.path + "/" + name,
-					"lastModified": new Date(),
-					"created": new Date()
-				};
-				if (data instanceof Buffer) {
-					document.data = new Binary(data);
-					document.size = data.length;
-				} else {
-					document.content = data.toString();
-					document.size = data.length;
-				}
-				_this.tree.mc.insert(document, function(err) {
-                    cbfscreatefile(err);
-                });
+				_this._createFile(name, data, enc, cbfscreatefile);
             });
 
 /*
@@ -119,6 +101,7 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
     },
 
     writeFileChunk: function(handler, type, cbfswritechunk) { // TODO
+		throw new Error("Not implemented");
         var size = handler.httpRequest.headers["x-file-size"];
         if (!size)
             return cbfswritechunk("Invalid chunked file upload, the X-File-Size header is required.");

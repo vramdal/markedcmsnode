@@ -11,26 +11,18 @@ var rawRoute = require('./routes/raw');
 var http = require('http');
 var path = require('path');
 var persistence = require('./persistence/' + process.env["persistence"]);
-var serveContentNegotiator = require('./middleware/contentNegotiator');
-var uploadContentNegotiator = require('./middleware/uploadContentNegotiator');
-var markdownRoute = require('./routes/markdownRoute');
-var ResourceResolver = require('./middleware/resourceResolver');
-var rewrite = require('./middleware/requestRewriter');
-var RendererResolver = require('./middleware/RendererResolver');
 var pageRenderer = require('./renderers/pageRenderer');
 var markdownContentRenderer = require('./renderers/markdownContentRenderer');
-//var errorRenderer = require('./renderers/errorRenderer');
 var pageCompiler = require("./routes/pageCompiler");
 var markdownContentCompiler = require("./routes/markdownContentCompiler");
 require("./util/polyfills");
 var siteRootPath = process.env["filePersistence.rootDir"];
-var responseProxy = require('./util/responseProxy');
 var jsDAV_Util = require("jsDAV/lib/shared/util");
 var fs = require("fs");
 var passport = require('passport');
 var GoogleStrategy = require('passport-google').Strategy;
-var ResourceFetcher = require("./util/resourceFetcher");
 var async = require("async");
+var mime = require("mime");
 
 
 
@@ -38,6 +30,9 @@ var async = require("async");
 var mongo = require('mongodb');
 var monk = require('monk');
 //var db = monk('localhost:27017/nodetest1');
+
+mime.define({"text/jade": ["jade"]});
+mime.define({"text/markdown": ["md"]});
 
 var compilers = {
     "X-mdcms/page": pageCompiler,
