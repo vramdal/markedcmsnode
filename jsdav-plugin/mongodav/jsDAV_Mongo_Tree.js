@@ -80,7 +80,7 @@ module.exports = jsDAV_Tree.extend({
             case "page": clazz = jsDAV_Mongo_Directory; break;
             case "folder": clazz = jsDAV_Mongo_Directory; break;
             case "content": clazz = jsDAV_Mongo_TextContent; break;
-            case "template": clazz = jsDAV_Mongo_File; break;
+            case "template": clazz = jsDAV_Mongo_TextContent; break;
             default: clazz = jsDAV_Mongo_File;
         }
         var result;

@@ -11,6 +11,7 @@ var mime = require("mime");
 
 var jsDAV_Mongo_TextContent = module.exports = jsDAV_Mongo_File.extend(iJsonRepresentation, {
     initialize: function(path, contentDoc, tree) {
+        this.setNew(contentDoc != null && contentDoc._id != null);
         this.path = path;
         this.contentDoc = contentDoc;
         this.tree = tree;

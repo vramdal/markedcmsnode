@@ -1,4 +1,5 @@
 var jsDAV_Mongo_Node = require("./jsDAV_Mongo_Node");
+var jsDAV_Mongo_File = require("./jsDAV_Mongo_File");
 var jsDAV_Collection = require("./../../node_modules/jsDAV/lib/DAV/collection");
 var jsDAV_iQuota = require("./../../node_modules/jsDAV/lib/DAV/interfaces/iQuota");
 var iJsonRepresentation = require("./iJsonRepresentation");
@@ -12,6 +13,7 @@ var Binary = require('bson').Binary;
 //noinspection JSUnusedGlobalSymbols
 var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepresentation, jsDAV_Collection, jsDAV_iQuota, jsDAV_Mongo_Prop_Template, {
     initialize: function(path, pageDoc, tree) {
+        this.setNew(pageDoc != null && pageDoc._id != null);
         this.path = path;
         this.pageDoc = pageDoc;
         this.tree = tree;
@@ -29,7 +31,8 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
      * @return {*}
      */
     createFile: function(name, data, enc, cbfscreatefile) {
-		this._createFile(name, data, enc, cbfscreatefile);
+        var file = jsDAV_Mongo_File.new(this.createFilePath(name), null, this.tree);
+        return file.writeData(data, enc, cbfscreatefile);
     },
 	_createFile: function(name, data, enc, callback) {
 		if (name.indexOf("/") != -1) {
@@ -64,7 +67,9 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
 		});
 	},
 
-    /**
+    createFilePath:   function (name) {
+        return this.path == "/" ? this.path + name : this.path + "/" + name;
+    }, /**
      * Creates a new file in the directory whilst writing to a stream instead of
      * from Buffer objects that reside in memory.
      *
@@ -75,79 +80,8 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
      * @return void
      */
     createFileStream: function(handler, name, enc, cbfscreatefile) {   // TODO
-        // is it a chunked upload?
-        var size = handler.httpRequest.headers["x-file-size"];
-        var _this = this;
-        if (size) {
-            if (!handler.httpRequest.headers["x-file-name"])
-                handler.httpRequest.headers["x-file-name"] = name;
-            this.writeFileChunk(handler, enc, cbfscreatefile);
-        }
-        else {
-            handler.getRequestBody(enc, function(err, data) {
-                if (err) {
-                    return cbfscreatefile(err);
-                }
-				_this._createFile(name, data, enc, cbfscreatefile);
-            });
-
-/*
-            var stream = Fs.createWriteStream(newPath, {
-                encoding: enc
-            });
-            handler.getRequestBody(enc, stream, false, cbfscreatefile);
-*/
-        }
-    },
-
-    writeFileChunk: function(handler, type, cbfswritechunk) { // TODO
-		throw new Error("Not implemented");
-        var size = handler.httpRequest.headers["x-file-size"];
-        if (!size)
-            return cbfswritechunk("Invalid chunked file upload, the X-File-Size header is required.");
-        var self = this;
-        var filename = handler.httpRequest.headers["x-file-name"];
-        var path = this.path + "/" + filename;
-        var track = handler.server.chunkedUploads[path];
-        if (!track) {
-            track = handler.server.chunkedUploads[path] = {
-                path: handler.server.tmpDir + "/" + Util.uuid(),
-                filename: filename,
-                timeout: null
-            };
-        }
-        clearTimeout(track.timeout);
-        path = track.path;
-        // if it takes more than ten minutes for the next chunk to
-        // arrive, remove the temp file and consider this a failed upload.
-        track.timeout = setTimeout(function() {
-            delete handler.server.chunkedUploads[path];
-            Fs.unlink(path, function() {});
-        }, 600000); //10 minutes timeout
-
-        var stream = Fs.createWriteStream(path, {
-            encoding: type,
-            flags: "a"
-        });
-
-        stream.on("close", function() {
-            Fs.stat(path, function(err, stat) {
-                if (err)
-                    return;
-
-                if (stat.size === parseInt(size, 10)) {
-                    delete handler.server.chunkedUploads[path];
-                    Util.move(path, self.path + "/" + filename, true, function(err) {
-                        if (err)
-                            return;
-                        handler.dispatchEvent("afterBind", handler.httpRequest.url,
-                                        self.path + "/" + filename);
-                    });
-                }
-            });
-        });
-
-        handler.getRequestBody(type, stream, false, cbfswritechunk);
+        var file = jsDAV_Mongo_File.new(this.createFilePath(name), null, this.tree);
+        file.createFileStream(handler, enc, cbfscreatefile);
     },
 
     /**

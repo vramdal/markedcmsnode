@@ -16,6 +16,15 @@ var Util = require("./../../node_modules/jsDAV/lib/shared/util");
 var jsDAV_Mongo_Node = module.exports = jsDAV_iNode.extend({
     initialize: function(path) {
         this.path = path;
+        this.isNew = false;
+    },
+
+    setNew: function(isNew) {
+        this._isNew = isNew;
+    },
+
+    isNew: function() {
+        return this._isNew;
     },
 
     setConnection: function(mongoConnection) {

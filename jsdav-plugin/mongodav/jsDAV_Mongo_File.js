@@ -7,9 +7,12 @@ var Async = require("asyncjs");
 var Util = require("./../../node_modules/jsDAV/lib/shared/util");
 var streamifier = require("streamifier");
 var mime = require("mime");
+var Binary = require('bson').Binary;
+
 
 var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
     initialize: function(path, contentDoc, tree) {
+        this.setNew(contentDoc != null && contentDoc._id != null);
         this.path = path;
         this.contentDoc = contentDoc;
         this.tree = tree;
@@ -114,7 +117,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      */
     getStream: function(start, end, cbfsfileget) {
         start = start || 0;
-        end = end || this.contentDoc.size;
+        end = end || this.size;
         cbfsfileget(null, this.contentDoc.data.read(start, end));
         cbfsfileget(); // Need to make a no-argument call to cbfsfileget to make it response.end(). See trunk/node/nodetest1/node_modules/jsDAV/lib/DAV/handler.js#611
 /*        if (typeof start == "number" && typeof end == "number")
@@ -194,5 +197,124 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
     },
     getJson: function() {
         return this.contentDoc;
+    },
+    writeData: function(data, enc, callback) {
+   		var mimeType = mime.lookup(this.path, "application/octet-stream");
+   		var resourceType = "attachment";
+   		if (mimeType.indexOf("image/") == 0) {
+   			resourceType = "image";
+   		} else if (mimeType.indexOf("text/markdown") == 0) {
+   			resourceType = "content";
+   		}
+
+        var name = this.path.substring(this.path.lastIndexOf("/") + 1);
+
+   		var document = {
+   			"name": name,
+   			"size": data.length,
+   			"resourceType": resourceType,
+   			"path": this.path,
+   			"lastModified": new Date(),
+   			"created": this.contentDoc && this.contentDoc.created ? this.contentDoc.created : new Date()
+   		};
+   		console.log("Creating file of mimeType " + mimeType + "(" + name + ")");
+   		console.log("Data is a " + (data instanceof Buffer ? "buffer" : "not buffer"));
+   		if (mimeType.indexOf("text/") != 0) {
+   			document.data = new Binary(data);
+   		} else {
+   			document.content = data.toString();
+   		}
+        var _this = this;
+        if (this.contentDoc && this.contentDoc._id) {
+            _this.tree.mc.update(
+                    {"_id": _this.contentDoc._id},
+                    _this.contentDoc,
+                    function (err) {
+                        return callback(err);
+                    });
+        } else {
+            this.tree.mc.insert(document, function (err) {
+                _this.contentDoc = document;
+                callback(err);
+            });
+        }
+   	},
+    /**
+     * Creates a new file in the directory whilst writing to a stream instead of
+     * from Buffer objects that reside in memory.
+     *
+     * @param {String} name Name of the file
+     * @param resource data Initial payload
+     * @param {String} [enc]
+     * @param {Function} cbfscreatefile
+     * @return void
+     */
+    createFileStream: function(handler,enc, cbfscreatefile) {   // TODO
+        // is it a chunked upload?
+        var size = handler.httpRequest.headers["x-file-size"];
+        var name = this.path.substring(this.path.lastIndexOf("/") + 1);
+        var _this = this;
+        if (size) {
+            if (!handler.httpRequest.headers["x-file-name"])
+                handler.httpRequest.headers["x-file-name"] = name;
+            this.writeFileChunk(handler, enc, cbfscreatefile);
+        }
+        else {
+            handler.getRequestBody(enc, function(err, data) {
+                if (err) {
+                    return cbfscreatefile(err);
+                }
+				_this.writeData(data, enc, cbfscreatefile);
+            });
+        }
+    },
+    writeFileChunk: function(handler, type, cbfswritechunk) { // TODO
+		throw new Error("Not implemented");
+        var size = handler.httpRequest.headers["x-file-size"];
+        if (!size)
+            return cbfswritechunk("Invalid chunked file upload, the X-File-Size header is required.");
+        var self = this;
+        var filename = handler.httpRequest.headers["x-file-name"];
+        var path = this.path;
+        var track = handler.server.chunkedUploads[path];
+        if (!track) {
+            track = handler.server.chunkedUploads[path] = {
+                path: handler.server.tmpDir + "/" + Util.uuid(),
+                filename: filename,
+                timeout: null
+            };
+        }
+        clearTimeout(track.timeout);
+        path = track.path;
+        // if it takes more than ten minutes for the next chunk to
+        // arrive, remove the temp file and consider this a failed upload.
+        track.timeout = setTimeout(function() {
+            delete handler.server.chunkedUploads[path];
+            Fs.unlink(path, function() {});
+        }, 600000); //10 minutes timeout
+
+        var stream = Fs.createWriteStream(path, { // TODO
+            encoding: type,
+            flags: "a"
+        });
+
+        stream.on("close", function() {
+            Fs.stat(path, function(err, stat) {
+                if (err)
+                    return;
+
+                if (stat.size === parseInt(size, 10)) {
+                    delete handler.server.chunkedUploads[path];
+                    Util.move(path, self.path + "/" + filename, true, function(err) {
+                        if (err)
+                            return;
+                        handler.dispatchEvent("afterBind", handler.httpRequest.url,
+                                        self.path + "/" + filename);
+                    });
+                }
+            });
+        });
+
+        handler.getRequestBody(type, stream, false, cbfswritechunk);
     }
 });
