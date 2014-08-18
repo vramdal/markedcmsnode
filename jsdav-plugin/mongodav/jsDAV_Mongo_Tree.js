@@ -10,6 +10,7 @@
 var jsDAV_Tree = require("./../../node_modules/jsDAV/lib/DAV/tree");
 var jsDAV_Mongo_Directory = require("./jsDAV_Mongo_Directory");
 var jsDAV_Mongo_File = require("./jsDAV_Mongo_File");
+var jsDAV_Mongo_TextContent = require("./jsDAV_Mongo_TextContent");
 var async = require("async");
 var Util = require("./../../node_modules/jsDAV/lib/shared/util");
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
@@ -78,7 +79,7 @@ module.exports = jsDAV_Tree.extend({
         switch (document.resourceType) {
             case "page": clazz = jsDAV_Mongo_Directory; break;
             case "folder": clazz = jsDAV_Mongo_Directory; break;
-            case "content": clazz = jsDAV_Mongo_File; break;
+            case "content": clazz = jsDAV_Mongo_TextContent; break;
             case "template": clazz = jsDAV_Mongo_File; break;
             default: clazz = jsDAV_Mongo_File;
         }

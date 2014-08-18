@@ -72,9 +72,9 @@ RendererDispatcherPlugin.renderers = [
 var authBackend = jsDAV_Auth_Backend_External;
 var profiler;
 if (process.env.NODE_ENV !== 'production'){  // See https://github.com/mattinsler/longjohn
-    var longjohn = require('longjohn');
-    longjohn.empty_frame = 'ASYNC CALLBACK';  // defaults to '---------------------------------------------'
-    profiler = require('v8-profiler'); // http://docs.nodejitsu.com/articles/getting-started/how-to-debug-nodejs-applications
+//    var longjohn = require('longjohn');
+//    longjohn.empty_frame = 'ASYNC CALLBACK';  // defaults to '---------------------------------------------'
+//    profiler = require('v8-profiler'); // http://docs.nodejitsu.com/articles/getting-started/how-to-debug-nodejs-applications
 }/*
 jsDAV.createServer({
     "node": path.join(siteRootPath),

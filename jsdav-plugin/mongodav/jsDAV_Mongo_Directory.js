@@ -7,6 +7,7 @@ var mongojs = require("mongojs");
 var Async = require("asyncjs");
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
 var mime = require("mime");
+var Binary = require('bson').Binary;
 
 //noinspection JSUnusedGlobalSymbols
 var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepresentation, jsDAV_Collection, jsDAV_iQuota, jsDAV_Mongo_Prop_Template, {
@@ -85,16 +86,25 @@ var jsDAV_Mongo_Directory = module.exports = jsDAV_Mongo_Node.extend(iJsonRepres
                 if (mimeType.indexOf("image/") == 0) {
                     resourceType = "image";
                 }
-                _this.tree.mc.insert({
-                    "name": name,
-                    "content": data.toString(),
-                    "pageId": _this.pageDoc._id,
-                    "size": data.length,
-                    "resourceType": resourceType,
-                    "path": _this.pageDoc.path + "/" + name,
-                    "lastModified": new Date(),
-                    "created": new Date()
-                }, function(err) {
+				var content;
+				var document = {
+					"name": name,
+					"content": content,
+					"pageId": _this.pageDoc._id,
+					"size": data.length,
+					"resourceType": resourceType,
+					"path": _this.pageDoc.path + "/" + name,
+					"lastModified": new Date(),
+					"created": new Date()
+				};
+				if (data instanceof Buffer) {
+					document.data = new Binary(data);
+					document.size = data.length;
+				} else {
+					document.content = data.toString();
+					document.size = data.length;
+				}
+				_this.tree.mc.insert(document, function(err) {
                     cbfscreatefile(err);
                 });
             });

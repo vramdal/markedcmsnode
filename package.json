@@ -26,7 +26,8 @@
     "pagedown": "*",
     "passport": "~0.2.0",
     "passport-google": "~0.3.0",
-    "streamifier": "^0.1.0"
+    "streamifier": "^0.1.0",
+	"bson": "~1.2.0"
   },
   "subdomain": "markedcms",
   "engines": {

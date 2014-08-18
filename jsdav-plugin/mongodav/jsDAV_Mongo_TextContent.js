@@ -3,12 +3,13 @@ var jsDAV_File = require("./../../node_modules/jsDAV/lib/DAV/file");
 //var jsDAV_iQuota = require("./../../node_modules/jsDAV/lib/DAV/interfaces/iQuota");
 var mongojs = require("mongojs");
 var iJsonRepresentation = require("./iJsonRepresentation");
+var jsDAV_Mongo_File = require("./jsDAV_Mongo_File");
 var Async = require("asyncjs");
 var Util = require("./../../node_modules/jsDAV/lib/shared/util");
 var streamifier = require("streamifier");
 var mime = require("mime");
 
-var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
+var jsDAV_Mongo_TextContent = module.exports = jsDAV_Mongo_File.extend(iJsonRepresentation, {
     initialize: function(path, contentDoc, tree) {
         this.path = path;
         this.contentDoc = contentDoc;
@@ -21,7 +22,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      * @param {mixed} data
      * @return void
      */
-    put: function(data, type, cbfsput) {
+    put: function(data, type, cbfsput) { // TODO
         Fs.writeFile(this.path, data, type || "utf8", cbfsput);
     },
 
@@ -74,7 +75,7 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      * @return Buffer
      */
     get: function(cbfsfileget) {
-        cbfsfileget(null, this.contentNode.content);
+        cbfsfileget(null, this.contentDoc.content);
 /*
         if (this.$buffer)
             return cbfsfileget(null, this.$buffer);
@@ -114,8 +115,8 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
      */
     getStream: function(start, end, cbfsfileget) {
         start = start || 0;
-        end = end || this.contentDoc.size;
-        cbfsfileget(null, this.contentDoc.data.read(start, end));
+        end = end || this.contentDoc.content.length;
+        cbfsfileget(null, this.contentDoc.content.substring(start, end));
         cbfsfileget(); // Need to make a no-argument call to cbfsfileget to make it response.end(). See trunk/node/nodetest1/node_modules/jsDAV/lib/DAV/handler.js#611
 /*        if (typeof start == "number" && typeof end == "number")
             options = { start: start, end: end };
@@ -137,21 +138,12 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
     },
 
     /**
-     * Delete the current file
-     *
-     * @return void
-     */
-    "delete": function(cbfsfiledel) {
-        this.tree.deletePath(this.contentDoc.path, cbfsfiledel);
-    },
-
-    /**
      * Returns the size of the node, in bytes
      *
      * @return int
      */
     getSize: function(cbfsgetsize) {
-        cbfsgetsize(null, this.contentDoc.size);
+        cbfsgetsize(null, this.contentDoc.content.length);
 /*
         if (this.$stat)
             return cbfsgetsize(null, this.$stat.size);
@@ -168,30 +160,15 @@ var jsDAV_Mongo_File = module.exports = jsDAV_Mongo_Node.extend(jsDAV_File, {
     },
 
     /**
-     * Returns the ETag for a file
-     * An ETag is a unique identifier representing the current version of the file.
-     * If the file changes, the ETag MUST change.
-     * Return null if the ETag can not effectively be determined
-     *
-     * @return mixed
-     */
-    getETag: function(cbfsgetetag) {
-        cbfsgetetag(null, null);
-    },
-
-    /**
      * Returns the mime-type for a file
      * If null is returned, we'll assume application/octet-stream
      *
      * @return mixed
      */
     getContentType: function(cbfsmime) {
-        return cbfsmime(null, mime.lookup(this.contentDoc.path, "application/octet-stream"));
+        return cbfsmime(null, "text/markdown");
     },
 
-    getLastModified: function(cbfsgetlm) {
-        return cbfsgetlm(null, this.contentDoc.lastModified);
-    },
     getJson: function() {
         return this.contentDoc;
     }
