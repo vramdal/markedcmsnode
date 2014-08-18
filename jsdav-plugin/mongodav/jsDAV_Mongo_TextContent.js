@@ -144,7 +144,7 @@ var jsDAV_Mongo_TextContent = module.exports = jsDAV_Mongo_File.extend(iJsonRepr
      * @return int
      */
     getSize: function(cbfsgetsize) {
-        cbfsgetsize(null, this.contentDoc.content.length);
+        cbfsgetsize(null, this.contentDoc.size);
 /*
         if (this.$stat)
             return cbfsgetsize(null, this.$stat.size);
