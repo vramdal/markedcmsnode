@@ -83,7 +83,10 @@ module.exports = AbstractRenderer.extend({
 				fcCallback(err, filledSlots);
 			})
 		};
-		var jadeCompile = function(templatesMap, filledSlots, callback) {
+        var getCurrentUserId = function(callback) {
+            renderer.handler.server.options.authBackend.getCurrentUser(callback);
+        };
+		var jadeCompile = function(templatesMap, filledSlots, currentUserId, callback) {
                 if (!jade.Parser.prototype.originalParseExtends) {
                     jade.Parser.prototype.originalParseExtends = jade.Parser.prototype["parseExtends"];
                     jade.Parser.prototype.originalResolvePath = jade.Parser.prototype["resolvePath"];
@@ -121,18 +124,20 @@ module.exports = AbstractRenderer.extend({
                             'pretty':  true,
                             'basedir': __dirname + "../../../views"}
                 );
-                filledSlots["user"] = renderer.handler.httpRequest.user;
+                if (currentUserId && currentUserId != "anonymous") {
+                    filledSlots["user"] = {name: currentUserId, email: currentUserId};
+                }
                 var html = templateFn(filledSlots);
                 callback(null, html);
             } catch (e) {
                 callback(e);
             }
 		};
-		async.parallel([prefetchSiteTemplates, fetchContent], function(err, results) {
+		async.parallel([prefetchSiteTemplates, fetchContent, getCurrentUserId], function(err, results) {
 			if (err) {
 				return callback(err);
 			}
-			jadeCompile(results[0], results[1], callback);
+			jadeCompile(results[0], results[1], results[2], callback);
 		});
     },
 

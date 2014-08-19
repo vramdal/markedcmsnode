@@ -57,13 +57,12 @@ var jsDAV = require("jsDAV/lib/jsdav");
 //jsDAV.debugMode = true;
 //var jsDAV_Locks_Backend_FS = require("jsDAV/lib/DAV/plugins/locks/fs");
 //var locksBackend = jsDAV_Locks_Backend_FS.new(path.join(__dirname, "/jsdav-locks"));
-var jsDAV_Auth_Backend_External = require("./jsdav-plugin/AuthPlugin");
+var jsDAV_Auth_Backend_MarkedCMS = require("./jsdav-plugin/AuthPlugin");
 var RendererDispatcherPlugin = require("./jsdav-plugin/RendererDispatcherPlugin");
 RendererDispatcherPlugin.renderers = [
         require("./jsdav-plugin/renderers/JsonRenderer"),
         require("./jsdav-plugin/renderers/PageRenderer")
 ];
-var authBackend = jsDAV_Auth_Backend_External;
 var profiler;
 if (process.env.NODE_ENV !== 'production'){  // See https://github.com/mattinsler/longjohn
 //    var longjohn = require('longjohn');
@@ -78,7 +77,8 @@ jsDAV.createServer({
 
 // From https://gist.github.com/touv/11045459
 var mongojs = require("mongojs");
-var db = mongojs(process.env["mongoConnectString"], ["content"]);
+var db = mongojs(process.env["mongoConnectString"], ["content", "users"]);
+var authBackend = jsDAV_Auth_Backend_MarkedCMS.new(db["users"]);
 
 var jsDavService;
 var collection = undefined;
