@@ -24,6 +24,7 @@ var jsDAV_Mongo_TextContent = module.exports = jsDAV_Mongo_File.extend(iJsonRepr
      * @return void
      */
     put: function(data, type, cbfsput) { // TODO
+        handler.markDirty(_this.path);
         Fs.writeFile(this.path, data, type || "utf8", cbfsput);
     },
 
@@ -64,6 +65,7 @@ var jsDAV_Mongo_TextContent = module.exports = jsDAV_Mongo_File.extend(iJsonRepr
                         {"_id": _this.contentDoc._id},
                         _this.contentDoc,
                         function (err) {
+                            handler.markDirty(_this.path);
                             return cbfsput(err);
                         });
             });
