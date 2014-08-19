@@ -169,7 +169,7 @@ var jsDAV_Mongo_TextContent = module.exports = jsDAV_Mongo_File.extend(iJsonRepr
      * @return mixed
      */
     getContentType: function(cbfsmime) {
-        return cbfsmime(null, "text/markdown");
+        return cbfsmime(null, mime.lookup(this.path));
     },
 
     getJson: function() {

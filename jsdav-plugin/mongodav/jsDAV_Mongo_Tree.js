@@ -14,6 +14,7 @@ var jsDAV_Mongo_TextContent = require("./jsDAV_Mongo_TextContent");
 var async = require("async");
 var Util = require("./../../node_modules/jsDAV/lib/shared/util");
 var Exc = require("./../../node_modules/jsDAV/lib/shared/exceptions");
+var mime = require("mime");
 
 /**
  * jsDAV_Tree_Filesystem
@@ -76,12 +77,18 @@ module.exports = jsDAV_Tree.extend({
      */
     getNodeForDocument: function(document, callback) {
         var clazz = undefined;
-        switch (document.resourceType) {
-            case "page": clazz = jsDAV_Mongo_Directory; break;
-            case "folder": clazz = jsDAV_Mongo_Directory; break;
-            case "content": clazz = jsDAV_Mongo_TextContent; break;
-            case "template": clazz = jsDAV_Mongo_TextContent; break;
-            default: clazz = jsDAV_Mongo_File;
+        if (document.resourceType === "page") {
+            clazz = jsDAV_Mongo_Directory;
+        } else if (document.resourceType === "folder") {
+            clazz = jsDAV_Mongo_Directory;
+        } else if (document.resourceType === "content") {
+            clazz = jsDAV_Mongo_TextContent;
+        } else if (document.resourceType === "template") {
+            clazz = jsDAV_Mongo_TextContent;
+        } else if (mime.lookup(document.path).indexOf("text/") == 0) {
+            clazz = jsDAV_Mongo_TextContent;
+        } else {
+            clazz = jsDAV_Mongo_File;
         }
         var result;
         if (clazz) {
