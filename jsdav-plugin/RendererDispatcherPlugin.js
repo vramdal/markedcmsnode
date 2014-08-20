@@ -99,11 +99,16 @@ module.exports = jsDAV_ServerPlugin.extend({
     },
     handleError: function(renderer, err) {
         var self = this;
-        if (!(err instanceof Exc.jsDAV_Exception)) {
+        if (!(err instanceof Exc.jsDAV_Exception) && !err.errorClass) {
 			console.error(err);
             err.code = 500;
             err.message = "Internal server error";
         }
+		if (err.errorClass) {
+			err.detail = err.toString();
+			err.code = 500;
+			err.message = err.errorClass + " error";
+		}
         self.handler.httpResponse.writeHead(err.code, {"content-type": renderer.getSupportedContentType() + "; charset=utf-8"});
 		renderer.renderError(err, function(err, str) {
 			self.handler.httpResponse.end(str);

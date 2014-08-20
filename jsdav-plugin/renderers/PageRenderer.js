@@ -4,7 +4,7 @@ var AbstractRenderer = require("./AbstractRenderer");
 var async = require("async");
 var jade = require("jade");
 var md = require("marked");
-var Path = require("path");
+var Path = require("./../../util/posixPath");
 var Nodes = require('./../../node_modules/jade/lib/nodes');
 
 
@@ -130,6 +130,7 @@ module.exports = AbstractRenderer.extend({
                 var html = templateFn(filledSlots);
                 callback(null, html);
             } catch (e) {
+				e.errorClass = "template";
                 callback(e);
             }
 		};
@@ -150,7 +151,7 @@ module.exports = AbstractRenderer.extend({
     },
 
 	renderError: function(err, callback) {
-        callback(null, "<h1>" + err.code + " " + err.message + "</h1>");
+        callback(null, "<h1>" + err.code + " " + err.message + "</h1><pre>" + (err.detail ? err.detail : "") + "</pre>");
 	}
 
 });

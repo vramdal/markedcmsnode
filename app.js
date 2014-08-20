@@ -179,6 +179,18 @@ app.configure(function() {
     app.use(passport.session());
 });
 
+var jsDAV_Collection = require("./node_modules/jsDAV/lib/DAV/collection");
+app.get("/export", function(req, res, next) {
+	var jsonDump = [];
+	collection.find({"path": /^.*$/}, function(err, documents) {
+		for (var i = 0; i < documents.length; i++) {
+			var document = documents[i];
+			jsonDump.push(document);
+		}
+		res.json(jsonDump);
+	});
+});
+
 app.get('/auth/google', function(req, res, next) {
     req.session.goAfterLogin = req.headers["referer"];
     next();

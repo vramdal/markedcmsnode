@@ -39,7 +39,7 @@ module.exports = jsDAV_Tree.extend({
 //        parentPath = parentPath.replace("/", "\\/");
         var reg = new RegExp("^" + ( parentPath) + "\/[^\/]+$");
         this.mc.find({"path": reg}, function(err, documents) {
-            async.map(documents, _this.getNodeForDocument, cbfschildren);
+            async.map(documents, _this.getNodeForDocument.bind(_this), cbfschildren);
         });
     },
     /**
