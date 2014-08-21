@@ -23,7 +23,7 @@ var passport = require('passport');
 var GoogleStrategy = require('passport-google').Strategy;
 var async = require("async");
 var mime = require("mime");
-
+var jsDAV_AuthorizationPlugin = require("./jsdav-plugin/authorization/AuthorizationPlugin");
 
 
 // New Code
@@ -97,6 +97,7 @@ var initJsDav = function(err, collection) {
         //    "locksBackend": locksBackend,
         "authBackend": authBackend,
         plugins:       jsDAV_Util.extend({
+			"authorizationPlugin": jsDAV_AuthorizationPlugin,
             "rendererDispathcerPlugin": RendererDispatcherPlugin
         }, jsDAV_Server.DEFAULT_PLUGINS)
     });
